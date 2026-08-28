@@ -43,6 +43,7 @@
   --accent-hover:  var(--blue-4);
   --accent-subtle: var(--blue-1);
   --focus:         var(--blue-3);
+  --track-idle:    var(--n-3);
 
   /* --- Spacing: 8pt grid ------------------------------------ */
   --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
@@ -79,6 +80,7 @@
     --accent-hover:  #89A5FF;
     --accent-subtle: #17203C;
     --focus:         #6A8DFF;
+    --track-idle:    #383F47;
     --blue-1:        #17203C;
     --green-1:       #16250C;
     --red-1:         #2E1414;

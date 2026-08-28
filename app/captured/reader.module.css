@@ -77,15 +77,12 @@
 .track { display: flex; gap: 4px; padding: var(--s-4) var(--s-5) 0; }
 .tick {
   flex: 1 1 0; height: 4px; border: 0; border-radius: var(--r-pill);
-  background: var(--n-3); cursor: pointer; padding: 0;
+  background: var(--track-idle); cursor: pointer; padding: 0;
   transition: background var(--motion), transform var(--motion);
 }
 .tick:hover { transform: scaleY(2); }
 .tick[data-state="ready"] { background: var(--n-5); }
 .tick[data-state="on"] { background: var(--accent); }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .tick { background: var(--n-7); }
-}
 
 .controls {
   display: flex; align-items: center; gap: var(--s-2);

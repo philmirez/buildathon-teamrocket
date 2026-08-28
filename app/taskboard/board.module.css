@@ -21,7 +21,7 @@
 }
 .seg {
   display: block; min-width: 4px;
-  background: var(--n-3);
+  background: var(--track-idle);
   border-radius: 2px;
   transition: background 320ms cubic-bezier(.2,0,.2,1), flex-grow 320ms;
 }
@@ -32,10 +32,6 @@
     -45deg, var(--red-3) 0 5px, color-mix(in srgb, var(--red-3) 55%, transparent) 5px 10px
   );
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .seg { background: var(--n-7); }
-}
-
 /* ---- triage strip ---- */
 .coach {
   display: flex; align-items: center; justify-content: space-between; gap: var(--s-4);
