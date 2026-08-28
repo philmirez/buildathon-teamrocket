@@ -1,9 +1,25 @@
-import Image from "next/image";
 import Link from "next/link";
+import HeroSlideshow from "@/components/HeroSlideshow";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import { byTier } from "@/lib/builds";
 import styles from "./page.module.css";
+
+/* Both are animated; next/image runs them `unoptimized` so the frames survive. */
+const HERO_SLIDES = [
+  {
+    src: "/teamrocket1.webp",
+    alt: "Team Rocket silhouette above the caption \u201cPrepare for trouble\u201d",
+    width: 500,
+    height: 344,
+  },
+  {
+    src: "/teamrocket2.gif",
+    alt: "The Team Rocket trio striking their entrance pose on an open road",
+    width: 540,
+    height: 432,
+  },
+];
 
 export default function Home() {
   const tiers = byTier();
@@ -23,17 +39,8 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Animated WebP — `unoptimized` keeps all 24 frames; Next's pipeline
-            would otherwise re-encode it to a still. */}
-        <Image
-          className={styles.heroArt}
-          src="/teamrocket1.webp"
-          alt="Team Rocket silhouette above the caption “Prepare for trouble”"
-          width={500}
-          height={344}
-          unoptimized
-          priority
-        />
+        <HeroSlideshow className={styles.heroArt} slides={HERO_SLIDES} />
+
       </section>
 
       {tiers.map((tier) => (

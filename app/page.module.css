@@ -7,17 +7,13 @@
 .heroText { display: flex; flex-direction: column; }
 .sub { max-width: 46ch; margin-top: var(--s-4); }
 
-.heroArt {
-  width: 100%; height: auto; max-width: 440px;
-  border-radius: var(--r-lg);
-  border: 1px solid var(--border);
-  box-shadow: var(--e-2);
-  justify-self: start;
-}
+.heroArt { width: 100%; max-width: 440px; justify-self: start; }
 
 @media (min-width: 860px) {
-  .hero { grid-template-columns: 1fr auto; gap: var(--s-8); }
-  .heroArt { justify-self: end; max-width: 420px; }
+  /* An `auto` track gives the slideshow wrapper no basis to size against, so
+     the column is sized explicitly. */
+  .hero { grid-template-columns: 1fr minmax(0, 420px); gap: var(--s-8); }
+  .heroArt { justify-self: end; }
 }
 
 /* ---- tier section ---- */

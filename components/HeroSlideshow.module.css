@@ -1,0 +1,37 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-3); width: 100%; }
+
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 500 / 344;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--e-2);
+  overflow: hidden;
+  background: #000;
+}
+
+.slide {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+.slide[data-active] { opacity: 1; }
+
+.dots { display: flex; gap: 6px; justify-content: center; }
+
+.dot {
+  width: 24px; height: 4px; padding: 0;
+  border: 0; border-radius: var(--r-pill);
+  background: var(--border-strong);
+  cursor: pointer;
+  transition: background var(--motion), transform var(--motion);
+}
+.dot:hover { transform: scaleY(1.6); }
+.dot[data-active] { background: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .slide { transition: none; }
+}
