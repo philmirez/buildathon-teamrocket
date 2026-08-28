@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
@@ -10,15 +11,29 @@ export default function Home() {
   return (
     <Shell>
       <section className={`container ${styles.hero}`}>
-        <h1 className="t-display t-balance">
-          Six builds,
-          <br />
-          one afternoon.
-        </h1>
-        <p className={`t-body t-secondary t-balance ${styles.sub}`}>
-          Each one runs on your own Gemini key — paste it once with the key button above and
-          every build below works.
-        </p>
+        <div className={styles.heroText}>
+          <h1 className="t-display t-balance">
+            Six builds,
+            <br />
+            one afternoon.
+          </h1>
+          <p className={`t-body t-secondary t-balance ${styles.sub}`}>
+            Each one runs on your own Gemini key — paste it once with the key button above and
+            every build below works.
+          </p>
+        </div>
+
+        {/* Animated WebP — `unoptimized` keeps all 24 frames; Next's pipeline
+            would otherwise re-encode it to a still. */}
+        <Image
+          className={styles.heroArt}
+          src="/teamrocket1.webp"
+          alt="Team Rocket silhouette above the caption “Prepare for trouble”"
+          width={500}
+          height={344}
+          unoptimized
+          priority
+        />
       </section>
 
       {tiers.map((tier) => (
