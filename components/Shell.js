@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
@@ -108,7 +109,17 @@ export default function Shell({ children, accent }) {
       <header className={styles.header}>
         <div className={`container ${styles.bar}`}>
           <Link href="/" className={styles.home} aria-label="All builds">
-            <Icon name="broccoli" size={26} />
+            {/* The link already carries the label, so the mark is decorative. */}
+            <Image
+              className={styles.logo}
+              src="/teamrocketlogo.png"
+              alt=""
+              /* Sized to its display box, not the source: passing the full
+                 472px made Next serve a 1080px variant for a 30px mark. */
+              width={30}
+              height={29}
+              priority
+            />
           </Link>
 
           <div className="grow" />

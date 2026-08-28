@@ -9,7 +9,7 @@ const inter = Inter({
 
 export const metadata = {
   title: { default: "Broccoli", template: "%s · Broccoli" },
-  description: "Six AI builds, one afternoon.",
+  description: "Six AI builds, one Team Rocket.",
 };
 
 export const viewport = {

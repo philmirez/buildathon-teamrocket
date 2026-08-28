@@ -41,7 +41,7 @@ export default function Home() {
           <h1 className="t-display t-balance">
             Six builds,
             <br />
-            one afternoon.
+            one Team Rocket.
           </h1>
           <p className={`t-body t-secondary t-balance ${styles.sub}`}>
             Each one runs on your own Gemini key — paste it once with the key button above and

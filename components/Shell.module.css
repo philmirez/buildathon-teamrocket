@@ -13,9 +13,10 @@
   display: grid; place-items: center;
   width: 40px; height: 40px; margin-left: -8px;
   border-radius: var(--r-pill);
-  color: var(--green-3);
   transition: background var(--motion), transform var(--motion);
 }
+
+.logo { width: 30px; height: auto; object-fit: contain; }
 .home:hover { background: var(--bg-hover); text-decoration: none; transform: rotate(-8deg); }
 
 .keyBtn { gap: var(--s-2); }
