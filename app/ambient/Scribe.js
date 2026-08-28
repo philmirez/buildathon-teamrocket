@@ -48,6 +48,15 @@ export default function Scribe() {
 
   const recRef = useRef(null);
   const finalRef = useRef("");
+  // What's actually on screen: finalized results plus the interim tail. The
+  // tail is the whole point — a short sentence often never finalizes before
+  // the session ends, and dropping it looked like the app ignoring you.
+  const liveRef = useRef("");
+  // Recognition callbacks are wired once per session; this keeps them filing
+  // against the current run() (and so the current workspace), not a stale one.
+  const runRef = useRef(null);
+  // Set when recognition is ending because of an error, so onend doesn't file.
+  const abortedRef = useRef(false);
 
   // --- persistence -------------------------------------------------------
   useEffect(() => {
@@ -119,11 +128,18 @@ export default function Scribe() {
     [busy, keys.gemini, ws]
   );
 
+  useEffect(() => {
+    runRef.current = run;
+  }, [run]);
+
   // --- microphone --------------------------------------------------------
-  const stopListening = useCallback(() => {
+
+  /** Detach and stop the recognizer without filing anything. */
+  const teardown = useCallback(() => {
     const rec = recRef.current;
     if (rec) {
       rec.onend = null;
+      rec.onresult = null;
       try {
         rec.stop();
       } catch {
@@ -132,10 +148,36 @@ export default function Scribe() {
       recRef.current = null;
     }
     setListening(false);
-    const text = finalRef.current.trim();
+  }, []);
+
+  /** File everything heard so far, interim words included. */
+  const fileCaptured = useCallback(() => {
+    const text = (liveRef.current || finalRef.current).trim();
     finalRef.current = "";
-    if (text) run(text);
-  }, [run]);
+    liveRef.current = "";
+    if (text) runRef.current?.(text);
+  }, []);
+
+  const stopListening = useCallback(() => {
+    teardown();
+    fileCaptured();
+  }, [teardown, fileCaptured]);
+
+  /**
+   * Hand off to the textarea instead of filing. Whatever the mic has heard so
+   * far — including interim words that never finalized — moves into the draft
+   * rather than being thrown away.
+   */
+  const switchToType = useCallback(() => {
+    teardown();
+
+    const captured = (liveRef.current || finalRef.current).trim();
+    finalRef.current = "";
+    liveRef.current = "";
+    setLive("");
+    if (captured) setDraft((d) => (d.trim() ? `${d.trim()} ${captured}` : captured));
+    setMode("type");
+  }, [teardown]);
 
   const startListening = useCallback(() => {
     const rec = makeRecognizer();
@@ -145,6 +187,8 @@ export default function Scribe() {
       return;
     }
     finalRef.current = "";
+    liveRef.current = "";
+    abortedRef.current = false;
     setLive("");
     setError("");
 
@@ -155,18 +199,32 @@ export default function Scribe() {
         if (event.results[i].isFinal) finalRef.current += chunk + " ";
         else interim += chunk;
       }
-      setLive((finalRef.current + interim).trim());
+      liveRef.current = (finalRef.current + interim).trim();
+      setLive(liveRef.current);
     };
     rec.onerror = (event) => {
       if (event.error === "not-allowed") {
         setError("Microphone blocked. Allow access, or switch to typing.");
         setMode("type");
+        abortedRef.current = true;
       } else if (event.error !== "aborted" && event.error !== "no-speech") {
         setError(`Microphone error: ${event.error}`);
+        abortedRef.current = true;
       }
       setListening(false);
     };
-    rec.onend = () => setListening(false);
+    // Chrome ends the session on its own after a pause, even with
+    // continuous = true. File what we heard instead of dropping it on the
+    // floor and quietly flipping the button back to idle.
+    rec.onend = () => {
+      recRef.current = null;
+      setListening(false);
+      if (abortedRef.current) {
+        abortedRef.current = false;
+        return;
+      }
+      fileCaptured();
+    };
 
     recRef.current = rec;
     try {
@@ -175,7 +233,7 @@ export default function Scribe() {
     } catch {
       setError("Could not start the microphone.");
     }
-  }, []);
+  }, [fileCaptured]);
 
   useEffect(
     () => () => {
@@ -336,7 +394,7 @@ export default function Scribe() {
                   </button>
                   <button
                     className="btn btn-ghost btn-sm"
-                    onClick={() => setMode("type")}
+                    onClick={switchToType}
                     disabled={busy}
                   >
                     Type instead
