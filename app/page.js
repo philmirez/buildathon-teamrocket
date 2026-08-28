@@ -31,7 +31,7 @@ const HERO_SLIDES = [
   },
 ];
 
-const REPO = "https://github.com/philmirez/buildathon-broccoli";
+const REPO = "https://github.com/philmirez/buildathon-teamrocket";
 
 /** Credited in the footer; the name is what reads, the handle is the link. */
 const TEAM = [
@@ -102,7 +102,7 @@ export default function Home() {
         <div className={styles.footCol}>
           <a className={styles.repo} href={REPO} target="_blank" rel="noreferrer noopener">
             <Icon name="github" size={16} />
-            philmirez/buildathon-broccoli
+            philmirez/buildathon-teamrocket
           </a>
           <p className="t-xs t-secondary">Keys stay in your browser.</p>
         </div>

@@ -5,7 +5,7 @@ links to all six.
 
 **Live:** [buildathon-broccoli.vercel.app](https://buildathon-broccoli.vercel.app)
 
-**Repo:** [github.com/philmirez/buildathon-broccoli](https://github.com/philmirez/buildathon-broccoli)
+**Repo:** [github.com/philmirez/buildathon-teamrocket](https://github.com/philmirez/buildathon-teamrocket)
 
 Built by Phil ([@philmirez](https://github.com/philmirez)) ·
 Allen ([@aap7763](https://github.com/aap7763)) ·
