@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Broccoli — five AI builds
 
-## Getting Started
+Five MVPs behind one Next.js app. Each lives at its own slug; the home page
+links to all five.
 
-First, run the development server:
+| Build | Slug | What it does |
+|---|---|---|
+| Ambient Scribe | [`/ambient`](/ambient) | Talk. An agent decides the folders, writes the notes, and files them. |
+| Captured Memory | [`/captured`](/captured) | Paste a chapter or transcript; each scene illustrates itself. |
+| Taskboard | [`/taskboard`](/taskboard) | Kanban cards double as segments of one effort-weighted progress bar. |
+| This or That | [`/this-or-that`](/this-or-that) | Group swipes one restaurant deck; an agent resolves the overlap. |
+| Skill Gap | [`/skill-gap`](/skill-gap) | Diff a resume against a posting; get the gap and fourteen days. |
+
+## Bring your own key
+
+Every build runs on the visitor's own Gemini key, pasted via the key button in
+the header. Keys are held in `localStorage` and sent per request to this app's
+own API routes; they are never stored server-side. A deployment-level
+`GEMINI_API_KEY` is used only when the visitor hasn't supplied one.
+
+Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Optionally, to run without pasting a key each time:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```bash
+echo 'GEMINI_API_KEY=your_key' > .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables
 
-## Learn More
+| Variable | Required | Purpose |
+|---|---|---|
+| `GEMINI_API_KEY` | no | Fallback key when a visitor hasn't pasted their own. |
+| `PIXABAY_API_KEY` | no | Stock-image fallback for Captured Memory. |
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Every build is an LLM-to-LLM pipeline rather than a single prompt. Each stage
+consumes the previous stage's **structured** output (Gemini `responseSchema`),
+never its prose:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Ambient Scribe** — a planner decides the filing structure and writes only a
+  brief per note; parallel writer agents expand each brief. Splitting these
+  stopped the planner from filing badly while distracted by prose.
+- **Skill Gap** — two readers extract claims from posting and resume in
+  parallel, a judge reconciles them into per-requirement verdicts, a planner
+  turns the gaps into 14 days. Staged across three requests so the handoffs are
+  visible in the UI.
+- **Taskboard** — a planner assigns effort weights (which is what makes the
+  progress bar honest), then a triage agent reads stage + idle days + weight to
+  name what's being neglected.
+- **This or That** — a deck agent proposes real restaurants, then a decider
+  reasons about hard constraints vs soft preferences instead of taking a naive
+  set intersection.
+- **Captured Memory** — a splitter finds visual beats and quotes passages
+  verbatim; an art director fixes one style bible and restates cast look and
+  palette in *every* prompt, because the image model has no memory between
+  calls.
 
-## Deploy on Vercel
+`lib/gemini.js` wraps all of it, with a fallback chain that steps down a model
+on 429/503 rather than failing a live demo.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Known limitation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Gemini's image models return `limit: 0` on free-tier keys — image generation is
+billing-gated. Captured Memory therefore degrades **Gemini → Pixabay → an
+explicit message**. Its text pipeline (scene splitting, style bible, per-scene
+prompts) runs fine on a free key; only the render step needs billing enabled or
+a Pixabay key.
