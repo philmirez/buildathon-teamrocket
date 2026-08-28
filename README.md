@@ -39,7 +39,8 @@ echo 'GEMINI_API_KEY=your_key' > .env.local
 | Variable | Required | Purpose |
 |---|---|---|
 | `GEMINI_API_KEY` | no | Fallback key when a visitor hasn't pasted their own. |
-| `PIXABAY_API_KEY` | no | Stock-image fallback for Captured Memory. |
+| `PIXABAY_API_KEY` | no | Stock-image fallback for Captured Memory and This or That. |
+| `GOOGLE_PLACES_API_KEY` | no | Real restaurant photos for This or That. Places API (New). |
 
 ## Architecture notes
 
@@ -59,7 +60,10 @@ never its prose:
   name what's being neglected.
 - **This or That** — a deck agent proposes real restaurants, then a decider
   reasons about hard constraints vs soft preferences instead of taking a naive
-  set intersection.
+  set intersection. Card photos are looked up, not generated: Google Places
+  supplies real photographs of the actual restaurant, degrading to labelled
+  cuisine stock and then to generative card art. No model ever invents a
+  storefront for a real business.
 - **Policy Diff** — the diff itself is computed deterministically in
   `lib/textdiff.js` *before* any model runs, so the agents can only describe
   changes that actually exist. An extractor then separates substance from
