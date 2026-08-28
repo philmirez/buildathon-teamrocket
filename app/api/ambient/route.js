@@ -39,6 +39,7 @@ const PLAN_SCHEMA = {
           noteId: { type: "string" },
           brief: { type: "string" },
         },
+        propertyOrdering: ["type", "name", "folder", "title", "newTitle", "noteId", "brief"],
         required: ["type"],
       },
     },
@@ -61,14 +62,25 @@ Rules:
 - If the transcript clearly continues an existing note, append to it (pass its
   [id] as noteId) instead of creating a near-duplicate.
 - Only delete or rename when the user explicitly asks for it.
-- "brief" is an instruction to the writer agent: say what the note must capture,
-  including the concrete details, names, numbers and dates from the transcript.
-  Do not write the note body yourself.
+- "title" is a NAME, not a description: 3 to 6 words, no trailing punctuation.
+  "Flashing quote" or "Design review moved". Never put instructions, meta
+  commentary, or the brief's text into the title.
+- "folder" is 1 to 3 words.
+- "brief" is a separate instruction to the writer agent: say what THIS note must
+  capture, listing the concrete details, names, numbers and dates that belong to
+  this topic and no other. Do not write the note body yourself, and never repeat
+  the brief inside the title.
 - "reply" is one short sentence, as if spoken back. No preamble, no lists.
 - If the transcript is empty or pure filler, return an empty actions array and
   say so in the reply.`;
 
 const WRITER_SYSTEM = `You write a single note body, in Markdown.
+
+The transcript you are given is a raw braindump covering SEVERAL UNRELATED
+topics. You are writing exactly one of them. Cover only the topic named in the
+brief and silently discard every other subject in the transcript, however
+interesting — another writer is handling those. A note that mentions a topic
+outside its brief is wrong.
 
 - Start directly with content. Never repeat the note title as a heading.
 - Preserve every concrete detail from the transcript: names, numbers, dates,
