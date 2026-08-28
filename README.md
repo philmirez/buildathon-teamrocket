@@ -3,7 +3,7 @@
 Six AI builds behind one Next.js app. Each lives at its own slug; the home page
 links to all six.
 
-**Live:** [buildathon-broccoli.vercel.app](https://buildathon-broccoli.vercel.app)
+**Live:** [teamrocket.website](https://teamrocket.website)
 
 **Repo:** [github.com/philmirez/buildathon-teamrocket](https://github.com/philmirez/buildathon-teamrocket)
 

@@ -12,7 +12,7 @@ const DESCRIPTION =
 
 export const metadata = {
   // Required for Next to emit absolute og:image URLs; crawlers reject relative ones.
-  metadataBase: new URL("https://buildathon-broccoli.vercel.app"),
+  metadataBase: new URL("https://teamrocket.website"),
   title: {
     default: "Team Rocket · DC DevFest 2026",
     template: "%s · Team Rocket",
