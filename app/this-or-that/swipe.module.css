@@ -48,19 +48,73 @@
 @keyframes flyLeft  { to { transform: translateX(-120%) rotate(-14deg); opacity: 0; } }
 
 .art, .winArt {
-  height: 130px; position: relative;
+  height: 180px; position: relative; overflow: hidden;
   display: flex; align-items: flex-end; justify-content: space-between;
   padding: var(--s-3) var(--s-4);
   background:
     radial-gradient(120% 100% at 15% 0%, hsl(var(--h1) 72% 58%) 0%, transparent 62%),
     linear-gradient(135deg, hsl(var(--h1) 62% 44%), hsl(var(--h2) 66% 38%));
 }
-.art::after, .winArt::after {
+/* The dot texture is the no-photo treatment; a real photo replaces it. */
+.art:not([data-photo])::after, .winArt:not([data-photo])::after {
   content: ""; position: absolute; inset: 0;
   background-image: radial-gradient(currentColor 1px, transparent 1px);
   background-size: 13px 13px; color: rgba(255,255,255,.16);
 }
-.winArt { height: 96px; align-items: flex-start; }
+.winArt { align-items: flex-start; }
+/* Clears the segmented photo bar that sits along the top edge. */
+.winArt[data-photo] { padding-top: 20px; }
+
+/* ---------------- photo strip ---------------- */
+
+.track {
+  position: absolute; inset: 0; display: flex;
+  transition: transform 220ms cubic-bezier(.2,0,.2,1);
+}
+.shot {
+  flex: 0 0 100%; width: 100%; height: 100%;
+  object-fit: cover; user-select: none; -webkit-user-drag: none;
+}
+/* Keeps the white price and cuisine pills legible over a bright photo. */
+.art[data-photo]::before, .winArt[data-photo]::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,.34) 0 22%, transparent 46% 62%, rgba(0,0,0,.42));
+}
+
+.tapZone {
+  position: absolute; top: 0; bottom: 0; width: 34%;
+  border: 0; background: none; padding: 0; cursor: pointer;
+  display: grid; place-items: center; color: #fff;
+  opacity: 0; transition: opacity var(--motion);
+}
+.tapLeft { left: 0; justify-items: start; padding-left: var(--s-3); }
+.tapRight { right: 0; justify-items: end; padding-right: var(--s-3); }
+.art:hover .tapZone, .winArt:hover .tapZone { opacity: .78; }
+.tapZone:hover { opacity: 1 !important; }
+.tapZone:focus-visible { opacity: 1; outline: 2px solid #fff; outline-offset: -4px; }
+/* Touch has no hover to reveal the arrows, so they stay faintly on. */
+@media (hover: none) {
+  .tapZone { opacity: .55; }
+}
+
+.dots {
+  position: absolute; top: 9px; left: var(--s-3); right: var(--s-3);
+  display: flex; gap: 4px; z-index: 1;
+}
+.dot {
+  flex: 1; height: 3px; border-radius: var(--r-pill);
+  background: rgba(255,255,255,.34);
+  transition: background var(--motion);
+}
+.dot[data-on] { background: #fff; }
+
+.credit {
+  position: absolute; top: 20px; right: var(--s-4); z-index: 1;
+  max-width: 58%; text-align: right;
+  font-size: .625rem; line-height: 1.3; color: rgba(255,255,255,.78);
+  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+  pointer-events: none;
+}
 
 .price, .cuisine {
   position: relative; z-index: 1;
@@ -96,7 +150,9 @@
   overflow: hidden; background: var(--bg-raised); box-shadow: var(--e-3);
   animation: dealIn 340ms cubic-bezier(.2,0,.2,1);
 }
-.winArt .badge { position: relative; z-index: 1; }
+/* Lifts the verdict badge over the photo track, which is absolutely
+   positioned and would otherwise paint on top of it. */
+.winBadge { position: relative; z-index: 1; }
 
 .tally { display: flex; flex-direction: column; gap: var(--s-2); }
 .tallyRow { display: flex; align-items: center; gap: var(--s-3); min-width: 0; }

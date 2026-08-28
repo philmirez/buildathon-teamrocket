@@ -6,11 +6,70 @@ import Icon from "@/components/Icon";
 import { apiPost, getKey } from "@/lib/keys";
 import s from "./swipe.module.css";
 
-/** Deterministic card art — a hashed hue pair, so no fake restaurant photos. */
+/**
+ * Deterministic card art — a hashed hue pair. It is the backdrop every card
+ * starts on, and stays the whole card when no photo of the place exists. We
+ * never generate a fake storefront for a real business.
+ */
 function artFor(name) {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
   return { "--h1": h, "--h2": (h + 48) % 360 };
+}
+
+/**
+ * Photo strip for one card.
+ *
+ * Advancing is a tap on the left or right half rather than a horizontal drag,
+ * because horizontal on this card already means yes/no. Panels that 404 drop
+ * themselves out rather than leaving a broken frame in the strip.
+ */
+function Thumbs({ shots, source, name }) {
+  const [i, setI] = useState(0);
+  const [dead, setDead] = useState(() => new Set());
+
+  const live = shots.filter((sh) => !dead.has(sh.url));
+  if (!live.length) return null;
+
+  const at = Math.min(i, live.length - 1);
+  const step = (d) => setI((n) => (n + d + live.length) % live.length);
+
+  return (
+    <>
+      <div className={s.track} style={{ transform: `translateX(-${at * 100}%)` }}>
+        {live.map((sh) => (
+          <img
+            key={sh.url}
+            className={s.shot}
+            src={sh.url}
+            alt={`${name}${source === "pixabay" ? " — representative photo" : ""}`}
+            draggable={false}
+            onError={() => setDead((prev) => new Set(prev).add(sh.url))}
+          />
+        ))}
+      </div>
+
+      {live.length > 1 && (
+        <>
+          <button className={`${s.tapZone} ${s.tapLeft}`} onClick={() => step(-1)} aria-label="Previous photo">
+            <Icon name="arrowLeft" size={18} />
+          </button>
+          <button className={`${s.tapZone} ${s.tapRight}`} onClick={() => step(1)} aria-label="Next photo">
+            <Icon name="arrowRight" size={18} />
+          </button>
+          <div className={s.dots} aria-hidden="true">
+            {live.map((sh, n) => (
+              <span key={sh.url} className={s.dot} data-on={n === at || undefined} />
+            ))}
+          </div>
+        </>
+      )}
+
+      <span className={s.credit}>
+        {source === "pixabay" ? "Stock photo — not this restaurant" : live[at].credit}
+      </span>
+    </>
+  );
 }
 
 const mapsUrl = (p, area) =>
@@ -30,6 +89,7 @@ export default function Swiper() {
   const [busy, setBusy] = useState(false);
   const [decision, setDecision] = useState(null);
   const [error, setError] = useState("");
+  const [photos, setPhotos] = useState({}); // name -> { shots, source }
 
   const current = places[idx];
   const member = members[who];
@@ -54,11 +114,32 @@ export default function Swiper() {
       setVotes(Object.fromEntries(members.map((m) => [m, { yes: [], no: [] }])));
       setWho(0);
       setIdx(0);
+      setPhotos({});
       setPhase("handoff");
+      loadPhotos(data.places, data.area || where);
     } catch (e) {
       setError(e.message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  /**
+   * Photos are a garnish, not a gate: this runs after the deck is already on
+   * screen and a failure leaves the gradient art in place without an error.
+   */
+  async function loadPhotos(deck, areaName) {
+    try {
+      const data = await apiPost("/api/this-or-that", {
+        stage: "photos",
+        places: deck,
+        area: areaName,
+        placesKey: getKey("places"),
+        pixabayKey: getKey("pixabay"),
+      });
+      setPhotos(data.photos || {});
+    } catch {
+      /* no photos, no problem — the cards render on their hashed art */
     }
   }
 
@@ -121,6 +202,7 @@ export default function Swiper() {
   function reset() {
     setPhase("setup");
     setPlaces([]);
+    setPhotos({});
     setVotes({});
     setDecision(null);
     setError("");
@@ -274,7 +356,14 @@ export default function Swiper() {
                 data-leaving={leaving || undefined}
                 style={artFor(current.name)}
               >
-                <div className={s.art}>
+                <div className={s.art} data-photo={photos[current.name] ? "" : undefined}>
+                  {photos[current.name] && (
+                    <Thumbs
+                      shots={photos[current.name].shots}
+                      source={photos[current.name].source}
+                      name={current.name}
+                    />
+                  )}
                   <span className={s.price}>{current.price}</span>
                   <span className={s.cuisine}>{current.cuisine}</span>
                 </div>
@@ -323,9 +412,18 @@ export default function Swiper() {
             ) : decision ? (
               <>
                 <div className={s.winner} style={winner ? artFor(winner.name) : undefined}>
-                  <div className={s.winArt}>
-                    <span className="badge badge-green">
-                      {unanimous.includes(decision.winner) ? "Unanimous" : "Best overlap"}
+                  <div className={s.winArt} data-photo={winner && photos[winner.name] ? "" : undefined}>
+                    {winner && photos[winner.name] && (
+                      <Thumbs
+                        shots={photos[winner.name].shots}
+                        source={photos[winner.name].source}
+                        name={winner.name}
+                      />
+                    )}
+                    <span className={s.winBadge}>
+                      <span className="badge badge-green">
+                        {unanimous.includes(decision.winner) ? "Unanimous" : "Best overlap"}
+                      </span>
                     </span>
                   </div>
                   <div className={s.cardBody}>
