@@ -1,7 +1,7 @@
-# Broccoli — five AI builds
+# Broccoli — six AI builds
 
 Six MVPs behind one Next.js app. Each lives at its own slug; the home page
-links to all five.
+links to all six.
 
 | Build | Slug | What it does |
 |---|---|---|
