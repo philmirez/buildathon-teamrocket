@@ -9,7 +9,7 @@ export default function Home() {
     <Shell>
       <section className={`container ${styles.hero}`}>
         <h1 className="t-display t-balance">
-          Five builds,
+          Six builds,
           <br />
           one afternoon.
         </h1>

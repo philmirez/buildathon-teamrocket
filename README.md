@@ -1,6 +1,6 @@
 # Broccoli — five AI builds
 
-Five MVPs behind one Next.js app. Each lives at its own slug; the home page
+Six MVPs behind one Next.js app. Each lives at its own slug; the home page
 links to all five.
 
 | Build | Slug | What it does |
@@ -10,6 +10,7 @@ links to all five.
 | Taskboard | [`/taskboard`](/taskboard) | Kanban cards double as segments of one effort-weighted progress bar. |
 | This or That | [`/this-or-that`](/this-or-that) | Group swipes one restaurant deck; an agent resolves the overlap. |
 | Skill Gap | [`/skill-gap`](/skill-gap) | Diff a resume against a posting; get the gap and fourteen days. |
+| Policy Diff | [`/policy-diff`](/policy-diff) | Diff two policy versions; plain-language changes ranked by who they hit. |
 
 ## Bring your own key
 
@@ -59,6 +60,11 @@ never its prose:
 - **This or That** — a deck agent proposes real restaurants, then a decider
   reasons about hard constraints vs soft preferences instead of taking a naive
   set intersection.
+- **Policy Diff** — the diff itself is computed deterministically in
+  `lib/textdiff.js` *before* any model runs, so the agents can only describe
+  changes that actually exist. An extractor then separates substance from
+  renumbering noise and merges hunks belonging to one logical change, and an
+  explainer translates and ranks them by real-world impact.
 - **Captured Memory** — a splitter finds visual beats and quotes passages
   verbatim; an art director fixes one style bible and restates cast look and
   palette in *every* prompt, because the image model has no memory between

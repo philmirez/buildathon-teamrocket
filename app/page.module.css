@@ -41,9 +41,7 @@
 
 .footer { padding-block: var(--s-5) var(--s-7); border-top: 1px solid var(--border); }
 
-/* First tile spans two columns on wide screens for a bit of rhythm */
+/* Six builds sit as two even rows of three on wide screens */
 @media (min-width: 900px) {
-  .grid { grid-template-columns: repeat(6, 1fr); }
-  .tile { grid-column: span 2; }
-  .tile:nth-child(1), .tile:nth-child(2) { grid-column: span 3; }
+  .grid { grid-template-columns: repeat(3, 1fr); }
 }

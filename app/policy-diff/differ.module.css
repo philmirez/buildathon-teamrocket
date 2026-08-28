@@ -1,0 +1,121 @@
+.intake { display: flex; flex-direction: column; gap: var(--s-5); align-items: flex-start; }
+
+.headIcon {
+  display: grid; place-items: center; width: 52px; height: 52px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, #0EA5A5 15%, transparent);
+  color: #0EA5A5;
+}
+
+.pair { display: grid; gap: var(--s-4); grid-template-columns: 1fr 1fr; width: 100%; }
+@media (max-width: 720px) { .pair { grid-template-columns: 1fr; } }
+
+.fieldHead {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s-2); margin-bottom: var(--s-2);
+}
+.box { min-height: 220px; font-size: .8125rem; line-height: 1.5; }
+
+/* ---- staged progress ---- */
+.stages { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); width: 100%; }
+.stages li { display: flex; align-items: center; gap: var(--s-3); color: var(--text-secondary); }
+.stages li[data-state="active"] { color: var(--text); font-weight: 500; }
+.stages li[data-state="done"] { color: var(--green-3); }
+.dot {
+  display: grid; place-items: center; width: 22px; height: 22px; flex: none;
+  border-radius: 50%; border: 1.5px solid currentColor;
+}
+.stages li[data-state="idle"] .dot { border-color: var(--border-strong); }
+
+/* ---- results ---- */
+.results { display: flex; flex-direction: column; gap: var(--s-6); }
+
+.statsStrip {
+  display: flex; flex-direction: column; gap: var(--s-2);
+  padding: var(--s-5);
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: var(--bg-sunken);
+}
+.stat { display: flex; align-items: baseline; gap: var(--s-3); }
+.statBreak { display: flex; flex-wrap: wrap; gap: var(--s-4); font-size: .875rem; color: var(--text-secondary); }
+.statBreak em { font-style: normal; font-weight: 600; color: var(--text); }
+
+.verdict {
+  display: flex; flex-direction: column; gap: var(--s-2);
+  padding: var(--s-5);
+  border: 1px solid var(--border); border-left-width: 4px;
+  border-radius: var(--r-lg);
+  background: var(--bg-raised);
+}
+.verdict[data-dir="favors_provider"] { border-left-color: var(--red-3); }
+.verdict[data-dir="favors_user"]     { border-left-color: var(--green-3); }
+.verdict[data-dir="mixed"]           { border-left-color: var(--yellow-3); }
+.verdict[data-dir="neutral"]         { border-left-color: var(--border-strong); }
+
+.list { display: flex; flex-direction: column; gap: var(--s-3); }
+
+.change {
+  display: flex; flex-direction: column; gap: var(--s-3);
+  padding: var(--s-5);
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: var(--bg-raised);
+}
+.featured { border-left: 3px solid var(--red-3); }
+.featured[data-dir="better"]  { border-left-color: var(--green-3); }
+.featured[data-dir="neutral"] { border-left-color: var(--border-strong); }
+
+.changeHead { display: flex; align-items: flex-start; gap: var(--s-3); }
+.rank {
+  display: grid; place-items: center; flex: none;
+  width: 26px; height: 26px; border-radius: var(--r-pill);
+  background: var(--bg-sunken); border: 1px solid var(--border);
+  font-size: .75rem; font-weight: 700; color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.plain { font-weight: 500; }
+
+.affected { display: flex; flex-direction: column; gap: var(--s-2); }
+.affectedLabel {
+  font-size: .6875rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--text-secondary);
+}
+
+.action {
+  display: flex; gap: var(--s-2); align-items: flex-start;
+  font-size: .875rem; line-height: 1.5;
+  padding: var(--s-3); border-radius: var(--r-md);
+  background: var(--green-1); color: var(--text);
+}
+
+.toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font-size: .8125rem; color: var(--text-secondary);
+  align-self: flex-start;
+}
+.toggle:hover { color: var(--accent); }
+
+.receipt {
+  display: flex; flex-direction: column; gap: var(--s-2);
+  padding: var(--s-4); border-radius: var(--r-md);
+  background: var(--bg-sunken); border: 1px solid var(--border);
+}
+.receiptLabel {
+  font-size: .6875rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--text-secondary);
+}
+.diffText {
+  font-size: .8125rem; line-height: 1.75;
+  white-space: pre-wrap; word-break: break-word;
+  font-family: var(--mono);
+}
+.diffText mark { background: none; padding: 1px 2px; border-radius: 2px; }
+.diffText mark[data-op="del"] {
+  background: color-mix(in srgb, var(--red-3) 20%, transparent);
+  color: var(--text); text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--red-3) 70%, transparent);
+}
+.diffText mark[data-op="ins"] {
+  background: color-mix(in srgb, var(--green-3) 26%, transparent);
+  color: var(--text); font-weight: 600;
+}
