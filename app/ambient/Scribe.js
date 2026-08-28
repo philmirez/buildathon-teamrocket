@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
@@ -374,6 +375,19 @@ export default function Scribe() {
 
             {mode === "voice" ? (
               <div className={s.voice}>
+                {listening && (
+                  /* Decorative — "Listening…" below already announces the state,
+                     so this stays out of the accessibility tree. */
+                  <Image
+                    className={s.voiceArt}
+                    src="/teamrocketsvoice.webp"
+                    alt=""
+                    aria-hidden="true"
+                    width={355}
+                    height={266}
+                    unoptimized
+                  />
+                )}
                 <p className={`t-sm ${s.liveText}`}>
                   {busy
                     ? "Organizing…"

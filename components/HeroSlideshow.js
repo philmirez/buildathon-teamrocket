@@ -16,6 +16,9 @@ const INTERVAL = 5500;
  */
 export default function HeroSlideshow({ slides, className }) {
   const [index, setIndex] = useState(0);
+  // Slides mount lazily and never unmount: mounting all of them upfront pulls
+  // every animation on first paint, and unmounting one would restart it.
+  const [mounted, setMounted] = useState(() => new Set([0, 1]));
   const [paused, setPaused] = useState(false);
   const reduced = useRef(false);
 
@@ -37,6 +40,13 @@ export default function HeroSlideshow({ slides, className }) {
     return () => clearTimeout(t);
   }, [index, paused, slides.length]);
 
+  useEffect(() => {
+    setMounted((prev) => {
+      const next = new Set(prev).add(index).add((index + 1) % slides.length);
+      return next.size === prev.size ? prev : next;
+    });
+  }, [index, slides.length]);
+
   const go = useCallback((i) => setIndex(i), []);
 
   return (
@@ -48,20 +58,25 @@ export default function HeroSlideshow({ slides, className }) {
       onBlurCapture={() => setPaused(false)}
     >
       <div className={s.frame}>
-        {slides.map((slide, i) => (
-          <Image
-            key={slide.src}
-            className={s.slide}
-            src={slide.src}
-            alt={slide.alt}
-            width={slide.width}
-            height={slide.height}
-            unoptimized
-            priority={i === 0}
-            data-active={i === index ? "" : undefined}
-            aria-hidden={i === index ? undefined : "true"}
-          />
-        ))}
+        {slides.map((slide, i) =>
+          !mounted.has(i) ? null : (
+            <Image
+              key={slide.src}
+              className={s.slide}
+              src={slide.src}
+              alt={slide.alt}
+              width={slide.width}
+              height={slide.height}
+              unoptimized
+              /* Deferral is handled by mounting, not by the viewport: these
+                 frames sit at opacity 0, and next/image's default lazy loading
+                 never fetched them, so a transition landed on a blank frame. */
+              {...(i === 0 ? { priority: true } : { loading: "eager" })}
+              data-active={i === index ? "" : undefined}
+              aria-hidden={i === index ? undefined : "true"}
+            />
+          )
+        )}
       </div>
 
       {slides.length > 1 && (

@@ -5,7 +5,11 @@ import Icon from "@/components/Icon";
 import { byTier } from "@/lib/builds";
 import styles from "./page.module.css";
 
-/* Both are animated; next/image runs them `unoptimized` so the frames survive. */
+/*
+ * All three are animated; next/image runs them unoptimized so the frames
+ * survive. Slide 2 is an animated-WebP re-encode of the source GIF (same 19
+ * frames, 71% smaller) — the .gif is kept in public/ as the original.
+ */
 const HERO_SLIDES = [
   {
     src: "/teamrocket1.webp",
@@ -14,10 +18,16 @@ const HERO_SLIDES = [
     height: 344,
   },
   {
-    src: "/teamrocket2.gif",
+    src: "/teamrocket2.webp",
     alt: "The Team Rocket trio striking their entrance pose on an open road",
     width: 540,
     height: 432,
+  },
+  {
+    src: "/teamrocket3.webp",
+    alt: "Team Rocket animation over a field of pink sparkles and roses",
+    width: 499,
+    height: 374,
   },
 ];
 
