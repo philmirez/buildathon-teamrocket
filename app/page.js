@@ -31,8 +31,15 @@ const HERO_SLIDES = [
   },
 ];
 
-/** GitHub handles, credited in the footer. */
-const TEAM = ["philmirez", "aap7763", "mimersheree", "roboray01"];
+const REPO = "https://github.com/philmirez/buildathon-broccoli";
+
+/** Credited in the footer; the name is what reads, the handle is the link. */
+const TEAM = [
+  { name: "Phil", handle: "philmirez" },
+  { name: "Allen", handle: "aap7763" },
+  { name: "Mimi", handle: "mimersheree" },
+  { name: "Ray", handle: "roboray01" },
+];
 
 export default function Home() {
   const tiers = byTier();
@@ -92,18 +99,26 @@ export default function Home() {
       ))}
 
       <footer className={`container ${styles.footer}`}>
-        <p className="t-xs t-secondary">Keys stay in your browser.</p>
+        <div className={styles.footCol}>
+          <a className={styles.repo} href={REPO} target="_blank" rel="noreferrer noopener">
+            <Icon name="github" size={16} />
+            philmirez/buildathon-broccoli
+          </a>
+          <p className="t-xs t-secondary">Keys stay in your browser.</p>
+        </div>
+
         <ul className={styles.team}>
-          {TEAM.map((handle) => (
-            <li key={handle}>
+          {TEAM.map((m) => (
+            <li key={m.handle}>
               <a
                 className={styles.member}
-                href={`https://github.com/${handle}`}
+                href={`https://github.com/${m.handle}`}
                 target="_blank"
                 rel="noreferrer noopener"
+                title={`@${m.handle}`}
               >
-                <Icon name="github" size={15} />
-                {handle}
+                <Icon name="github" size={14} />
+                {m.name}
               </a>
             </li>
           ))}

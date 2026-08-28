@@ -5,10 +5,12 @@ links to all six.
 
 **Live:** [buildathon-broccoli.vercel.app](https://buildathon-broccoli.vercel.app)
 
-Built by [@philmirez](https://github.com/philmirez) ·
-[@aap7763](https://github.com/aap7763) ·
-[@mimersheree](https://github.com/mimersheree) ·
-[@roboray01](https://github.com/roboray01)
+**Repo:** [github.com/philmirez/buildathon-broccoli](https://github.com/philmirez/buildathon-broccoli)
+
+Built by Phil ([@philmirez](https://github.com/philmirez)) ·
+Allen ([@aap7763](https://github.com/aap7763)) ·
+Mimi ([@mimersheree](https://github.com/mimersheree)) ·
+Ray ([@roboray01](https://github.com/roboray01))
 
 | Build | Slug | What it does | Keys used |
 |---|---|---|---|
