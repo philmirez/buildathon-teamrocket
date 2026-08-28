@@ -74,7 +74,20 @@
 }
 .tile:hover .tileGo { transform: translateX(3px); color: var(--tint); }
 
-.footer { padding-block: var(--s-5) var(--s-7); border-top: 1px solid var(--border); }
+.footer {
+  padding-block: var(--s-5) var(--s-7);
+  border-top: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: var(--s-3) var(--s-5);
+}
+
+.team { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-4); }
+
+.member {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .75rem; color: var(--text-secondary);
+}
+.member:hover { color: var(--accent); text-decoration: none; }
 
 /* Fixed three-up so tiles stay the same width whatever a tier holds */
 @media (min-width: 900px) {

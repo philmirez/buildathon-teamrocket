@@ -1,25 +1,55 @@
-# Broccoli — six AI builds
+# Team Rocket — DC DevFest 2026 Buildathon
 
-Six MVPs behind one Next.js app. Each lives at its own slug; the home page
+Six AI builds behind one Next.js app. Each lives at its own slug; the home page
 links to all six.
 
-| Build | Slug | What it does |
-|---|---|---|
-| Ambient Scribe | [`/ambient`](/ambient) | Talk. An agent decides the folders, writes the notes, and files them. |
-| Captured Memory | [`/captured`](/captured) | Paste a chapter or transcript; each scene illustrates itself. |
-| Taskboard | [`/taskboard`](/taskboard) | Kanban cards double as segments of one effort-weighted progress bar. |
-| This or That | [`/this-or-that`](/this-or-that) | Group swipes one restaurant deck; an agent resolves the overlap. |
-| Skill Gap | [`/skill-gap`](/skill-gap) | Diff a resume against a posting; get the gap and fourteen days. |
-| Policy Diff | [`/policy-diff`](/policy-diff) | Diff two policy versions; plain-language changes ranked by who they hit. |
+**Live:** [buildathon-broccoli.vercel.app](https://buildathon-broccoli.vercel.app)
 
-## Bring your own key
+Built by [@philmirez](https://github.com/philmirez) ·
+[@aap7763](https://github.com/aap7763) ·
+[@mimersheree](https://github.com/mimersheree) ·
+[@roboray01](https://github.com/roboray01)
 
-Every build runs on the visitor's own Gemini key, pasted via the key button in
-the header. Keys are held in `localStorage` and sent per request to this app's
-own API routes; they are never stored server-side. A deployment-level
-`GEMINI_API_KEY` is used only when the visitor hasn't supplied one.
+| Build | Slug | What it does | Keys used |
+|---|---|---|---|
+| Ambient Scribe | [`/ambient`](/ambient) | Talk. An agent decides the folders, writes the notes, and files them. | Gemini |
+| Captured Memory | [`/captured`](/captured) | Paste a chapter or transcript; each scene illustrates itself. | Gemini **(billing on)**, Pixabay *(optional)* |
+| Taskboard | [`/taskboard`](/taskboard) | Kanban cards double as segments of one effort-weighted progress bar. | Gemini |
+| This or That | [`/this-or-that`](/this-or-that) | Group swipes one restaurant deck; an agent resolves the overlap. | Gemini, Google Places *(optional)*, Pixabay *(optional)* |
+| Skill Gap | [`/skill-gap`](/skill-gap) | Diff a resume against a posting; get the gap and fourteen days. | Gemini |
+| Policy Diff | [`/policy-diff`](/policy-diff) | Diff two policy versions; plain-language changes ranked by who they hit. | Gemini |
 
-Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+## Keys
+
+**A Gemini key is required. All six builds need one and nothing runs without
+it.** Get a free one at
+[aistudio.google.com/apikey](https://aistudio.google.com/apikey), then paste it
+into the key button in the site header. The other two keys are optional and
+only affect imagery.
+
+| Key | Required | Powers | Without it |
+|---|---|---|---|
+| **Gemini** | **Yes — all six builds** | Every agent pipeline in the app | Nothing runs |
+| Gemini with **billing enabled** | Only for Captured Memory | Scene image generation | Free-tier keys return `limit: 0` on every image model, so scenes fall back to Pixabay, then to an explicit message. The rest of that build — scene splitting, style bible, per-scene prompts — runs fine on a free key |
+| Google Places | No | Real restaurant photographs in This or That | Cards fall back to Pixabay stock, then to generated card art. Restaurants and the decision agent are unaffected |
+| Pixabay | No | Image fallback for Captured Memory and This or That | Those two fall through to their last tier: an explicit message, and generated card art |
+
+### How keys reach the app
+
+Keys are pasted in the browser, held in `localStorage`, and sent per request to
+this app's own API routes — they are never written to a server. The API call to
+Google happens server-side so the key never rides in a URL and never hits CORS.
+
+Environment variables exist only as a **deployment-level fallback** for when a
+visitor has not pasted their own key. None are needed to run or deploy the app;
+setting `GEMINI_API_KEY` just means visitors can try it without their own key,
+billed to whoever deployed it.
+
+| Variable | Falls back for |
+|---|---|
+| `GEMINI_API_KEY` | The Gemini key above |
+| `PIXABAY_API_KEY` | The Pixabay key above |
+| `GOOGLE_PLACES_API_KEY` | The Google Places key above (Places API **New**) |
 
 ## Local development
 
@@ -28,19 +58,11 @@ npm install
 npm run dev
 ```
 
-Optionally, to run without pasting a key each time:
+Optionally, to avoid pasting a key on every reload:
 
 ```bash
 echo 'GEMINI_API_KEY=your_key' > .env.local
 ```
-
-## Environment variables
-
-| Variable | Required | Purpose |
-|---|---|---|
-| `GEMINI_API_KEY` | no | Fallback key when a visitor hasn't pasted their own. |
-| `PIXABAY_API_KEY` | no | Stock-image fallback for Captured Memory and This or That. |
-| `GOOGLE_PLACES_API_KEY` | no | Real restaurant photos for This or That. Places API (New). |
 
 ## Architecture notes
 
@@ -77,10 +99,12 @@ never its prose:
 `lib/gemini.js` wraps all of it, with a fallback chain that steps down a model
 on 429/503 rather than failing a live demo.
 
-## Known limitation
+## Verification
 
-Gemini's image models return `limit: 0` on free-tier keys — image generation is
-billing-gated. Captured Memory therefore degrades **Gemini → Pixabay → an
-explicit message**. Its text pipeline (scene splitting, style bible, per-scene
-prompts) runs fine on a free key; only the render step needs billing enabled or
-a Pixabay key.
+Every pipeline was run against the live Gemini API before shipping, not just
+type-checked. Notable results: Policy Diff narrowed 12 real hunks to 9
+substantive changes and ranked a quiet arbitration clause above a visible price
+rise; Taskboard's triage agent flagged an abandoned in-progress task while
+deliberately *not* flagging the longest-idle one because it was trivial; and
+Captured Memory produced byte-identical character descriptions across
+non-adjacent scenes.

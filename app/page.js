@@ -31,6 +31,9 @@ const HERO_SLIDES = [
   },
 ];
 
+/** GitHub handles, credited in the footer. */
+const TEAM = ["philmirez", "aap7763", "mimersheree", "roboray01"];
+
 export default function Home() {
   const tiers = byTier();
 
@@ -90,6 +93,21 @@ export default function Home() {
 
       <footer className={`container ${styles.footer}`}>
         <p className="t-xs t-secondary">Keys stay in your browser.</p>
+        <ul className={styles.team}>
+          {TEAM.map((handle) => (
+            <li key={handle}>
+              <a
+                className={styles.member}
+                href={`https://github.com/${handle}`}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <Icon name="github" size={15} />
+                {handle}
+              </a>
+            </li>
+          ))}
+        </ul>
       </footer>
     </Shell>
   );
