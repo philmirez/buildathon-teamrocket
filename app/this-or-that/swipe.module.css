@@ -1,0 +1,102 @@
+.setup, .handoff {
+  max-width: 520px; margin-inline: auto; padding-block: var(--s-6);
+  display: flex; flex-direction: column; gap: var(--s-3); align-items: flex-start;
+}
+.handoff { align-items: center; text-align: center; padding-block: var(--s-9); }
+
+.headIcon {
+  display: grid; place-items: center; width: 52px; height: 52px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--red-3) 14%, transparent);
+  color: var(--red-3);
+}
+.form { display: flex; flex-direction: column; gap: var(--s-4); width: 100%; margin-top: var(--s-4); }
+.chipX {
+  display: grid; place-items: center; border: 0; background: none;
+  color: var(--text-secondary); cursor: pointer; padding: 2px; margin-right: -4px;
+}
+.chipX:hover { color: var(--text); }
+
+/* ---------------- deck ---------------- */
+.deck {
+  max-width: 420px; margin-inline: auto;
+  display: flex; flex-direction: column; gap: var(--s-4);
+}
+
+.cardStack { position: relative; }
+
+.card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--e-3);
+  display: flex; flex-direction: column;
+  animation: dealIn 280ms cubic-bezier(.2,0,.2,1);
+}
+@keyframes dealIn { from { opacity: 0; transform: translateY(10px) scale(.97); } }
+
+.behind {
+  position: absolute; inset: 0; z-index: -1;
+  transform: translateY(10px) scale(.96); opacity: .5;
+  animation: none;
+}
+
+.card[data-leaving="yes"] { animation: flyRight 260ms cubic-bezier(.4,0,1,1) forwards; }
+.card[data-leaving="no"]  { animation: flyLeft  260ms cubic-bezier(.4,0,1,1) forwards; }
+@keyframes flyRight { to { transform: translateX(120%) rotate(14deg); opacity: 0; } }
+@keyframes flyLeft  { to { transform: translateX(-120%) rotate(-14deg); opacity: 0; } }
+
+.art, .winArt {
+  height: 130px; position: relative;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: var(--s-3) var(--s-4);
+  background:
+    radial-gradient(120% 100% at 15% 0%, hsl(var(--h1) 72% 58%) 0%, transparent 62%),
+    linear-gradient(135deg, hsl(var(--h1) 62% 44%), hsl(var(--h2) 66% 38%));
+}
+.art::after, .winArt::after {
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 13px 13px; color: rgba(255,255,255,.16);
+}
+.winArt { height: 96px; align-items: flex-start; }
+
+.price, .cuisine {
+  position: relative; z-index: 1;
+  color: #fff; font-size: .8125rem; font-weight: 600;
+  background: rgba(0,0,0,.32); backdrop-filter: blur(4px);
+  padding: 4px 10px; border-radius: var(--r-pill);
+}
+
+.cardBody { padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-2); align-items: flex-start; }
+
+.dish { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 500; }
+.maps { display: inline-flex; align-items: center; gap: 5px; color: var(--text-secondary); }
+.maps:hover { color: var(--accent); }
+
+.actions { display: flex; justify-content: center; gap: var(--s-5); }
+.swipeBtn {
+  width: 62px; height: 62px; border-radius: var(--r-pill);
+  display: grid; place-items: center; cursor: pointer;
+  background: var(--bg-raised); border: 2px solid var(--border-strong);
+  transition: transform var(--motion), border-color var(--motion), color var(--motion), background var(--motion);
+}
+.swipeBtn:hover { transform: scale(1.07); }
+.swipeBtn:active { transform: scale(.94); }
+.nope:hover { border-color: var(--red-3); color: var(--red-3); background: var(--red-1); }
+.yep:hover  { border-color: var(--green-3); color: var(--green-3); background: var(--green-1); }
+
+/* ---------------- result ---------------- */
+.result { display: flex; flex-direction: column; gap: var(--s-4); max-width: 520px; margin-inline: auto; }
+.thinking { display: flex; flex-direction: column; align-items: center; gap: var(--s-4); padding-block: var(--s-9); }
+
+.winner {
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  overflow: hidden; background: var(--bg-raised); box-shadow: var(--e-3);
+  animation: dealIn 340ms cubic-bezier(.2,0,.2,1);
+}
+.winArt .badge { position: relative; z-index: 1; }
+
+.tally { display: flex; flex-direction: column; gap: var(--s-2); }
+.tallyRow { display: flex; align-items: center; gap: var(--s-3); min-width: 0; }
