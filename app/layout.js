@@ -7,9 +7,30 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const DESCRIPTION =
+  "Six AI builds for the DC DevFest 2026 Buildathon. Each runs on your own Gemini key.";
+
 export const metadata = {
-  title: { default: "Broccoli", template: "%s · Broccoli" },
-  description: "Six AI builds, one Team Rocket.",
+  // Required for Next to emit absolute og:image URLs; crawlers reject relative ones.
+  metadataBase: new URL("https://buildathon-broccoli.vercel.app"),
+  title: {
+    default: "Team Rocket · DC DevFest 2026",
+    template: "%s · Team Rocket",
+  },
+  description: DESCRIPTION,
+  applicationName: "Team Rocket",
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Team Rocket · DC DevFest 2026",
+    title: "Team Rocket · DC DevFest 2026",
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Team Rocket · DC DevFest 2026",
+    description: DESCRIPTION,
+  },
 };
 
 export const viewport = {
