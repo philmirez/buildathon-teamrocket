@@ -82,6 +82,17 @@ export default function Home() {
               <h3 className="t-h3">{m.name}</h3>
 
               <div className={styles.links}>
+                {m.site && (
+                  <a
+                    className={styles.social}
+                    href={m.site}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    aria-label={`${m.name}'s website`}
+                  >
+                    <Icon name="globe" size={17} />
+                  </a>
+                )}
                 <a
                   className={styles.social}
                   href={m.linkedin}
