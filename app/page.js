@@ -33,12 +33,33 @@ const HERO_SLIDES = [
 ];
 
 const REPO = "https://github.com/philmirez/buildathon-teamrocket";
+const CLAUDE_CODE = "https://claude.ai/referral/LXPYIRcZng";
 
 export default function Home() {
   const tiers = byTier();
 
   return (
     <Shell>
+      <div className={styles.bannerWrap}>
+      <a
+        className={styles.banner}
+        href={CLAUDE_CODE}
+        target="_blank"
+        rel="noopener"
+      >
+        <span className={styles.bannerIcon} aria-hidden="true">
+          <Icon name="sparkle" size={16} />
+        </span>
+        <span className={styles.bannerText}>
+          Every one of these six builds was written with <strong>Claude Code</strong>.
+        </span>
+        <span className={styles.bannerCta}>
+          Try it
+          <Icon name="arrowRight" size={15} />
+        </span>
+      </a>
+      </div>
+
       <div className={styles.layout}>
       <aside className={styles.side}>
         <header className={styles.tierHead}>
