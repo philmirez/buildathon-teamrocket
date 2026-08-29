@@ -78,6 +78,9 @@ const mapsUrl = (p, area) =>
 export default function Swiper() {
   const [phase, setPhase] = useState("setup"); // setup | handoff | swipe | result
   const [where, setWhere] = useState("");
+  const [mode, setMode] = useState("driving");
+  const [locating, setLocating] = useState(false);
+  const [usingGps, setUsingGps] = useState(false);
   const [craving, setCraving] = useState("");
   const [members, setMembers] = useState(["Phil", "Allen"]);
   const [places, setPlaces] = useState([]);
@@ -105,6 +108,7 @@ export default function Swiper() {
       const data = await apiPost("/api/this-or-that", {
         stage: "deck",
         where,
+        mode,
         craving,
         members,
       });
@@ -141,6 +145,37 @@ export default function Swiper() {
     } catch {
       /* no photos, no problem — the cards render on their hashed art */
     }
+  }
+
+  /**
+   * Ask the browser for coordinates and hand them straight to the deck agent,
+   * which names the neighbourhood back. That avoids a geocoding key, and the
+   * returned area is shown so the user can confirm it placed them correctly.
+   */
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      setError("This browser can't share a location. Type an area instead.");
+      return;
+    }
+    setLocating(true);
+    setError("");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setWhere(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+        setUsingGps(true);
+        setLocating(false);
+      },
+      (err) => {
+        setLocating(false);
+        setError(
+          err.code === err.PERMISSION_DENIED
+            ? "Location permission denied. Type an area instead."
+            : "Couldn't get your location. Type an area instead."
+        );
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+    );
   }
 
   function swipe(liked) {
@@ -227,17 +262,63 @@ export default function Swiper() {
 
             <div className={s.form}>
               <div className="field">
-                <label className="field-label" htmlFor="where">
-                  Where
-                </label>
+                <div className={s.fieldHead}>
+                  <label className="field-label" htmlFor="where" style={{ margin: 0 }}>
+                    Where
+                  </label>
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={useMyLocation}
+                    disabled={busy || locating}
+                  >
+                    {locating ? (
+                      <span className="spinner" style={{ width: 13, height: 13 }} />
+                    ) : (
+                      <Icon name="pin" size={14} />
+                    )}
+                    {locating ? "Locating" : "Use my location"}
+                  </button>
+                </div>
                 <input
                   id="where"
                   className="input"
                   value={where}
-                  onChange={(e) => setWhere(e.target.value)}
+                  onChange={(e) => {
+                    setWhere(e.target.value);
+                    setUsingGps(false);
+                  }}
                   placeholder="Austin, TX"
                   disabled={busy}
                 />
+                {usingGps && (
+                  <p className="field-hint">
+                    Using your current coordinates. The deck will name the neighbourhood back
+                    so you can check it.
+                  </p>
+                )}
+              </div>
+
+              <div className="field">
+                <span className="field-label">How far are you willing to go?</span>
+                <div className="row-wrap" style={{ "--gap": "var(--s-2)" }}>
+                  {[
+                    { id: "walking", label: "Walking distance", hint: "about 15 min on foot" },
+                    { id: "driving", label: "Driving distance", hint: "about 20 min by car" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      className={`chip ${mode === opt.id ? "chip-selected" : ""}`}
+                      onClick={() => setMode(opt.id)}
+                      disabled={busy}
+                      aria-pressed={mode === opt.id}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="field-hint">
+                  {mode === "walking" ? "About 15 minutes on foot." : "About 20 minutes by car."}
+                </p>
               </div>
 
               <div className="field">

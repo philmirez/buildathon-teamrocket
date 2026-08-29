@@ -67,7 +67,21 @@ const DECK = `You propose restaurants a group could actually go to tonight.
   a generic "great food and atmosphere".
 - "vibe" is two or three words: "loud, communal tables".
 - "dish" is the single thing to order.
-- Produce 8 places.`;
+- Produce 8 places.
+
+TRAVEL RADIUS
+- "walking" means places someone would actually walk to from the stated point:
+  roughly a 15 minute walk, about a kilometre. Do not include anywhere they
+  would need a car for.
+- "driving" means roughly a 20 minute drive, so a wider net across
+  neighbourhoods is fine.
+- Respect this strictly. A walkable request that returns a place across town is
+  wrong even if the restaurant is excellent.
+
+WHEN THE AREA IS COORDINATES
+- The area may arrive as a "latitude, longitude" pair. Identify the
+  neighbourhood and city those coordinates fall in, use it, and name it in the
+  "area" field so the user can confirm you placed them correctly.`;
 
 const DECIDE = `You settle where a group is eating.
 
@@ -204,12 +218,15 @@ export async function POST(req) {
       const where = (body.where || "").trim();
       if (!where) return Response.json({ error: "Where are you eating?" }, { status: 400 });
 
+      const mode = body.mode === "walking" ? "walking" : "driving";
+
       const deck = await geminiJSON({
         apiKey,
         system: DECK,
         schema: DECK_SCHEMA,
         temperature: 0.9,
         prompt: `AREA: ${where}
+TRAVEL RADIUS: ${mode}
 CRAVING / CONSTRAINTS: ${body.craving?.trim() || "open to anything"}
 GROUP SIZE: ${body.members?.length || 2}`,
       });

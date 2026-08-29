@@ -1,3 +1,22 @@
+/* ---- page shell: roster rail on the left from tablet up ---- */
+.layout {
+  width: 100%; max-width: 1240px; margin-inline: auto;
+  padding-inline: var(--s-5);
+  display: grid; grid-template-columns: 1fr; gap: var(--s-6);
+}
+.main { min-width: 0; order: 1; }
+.side { order: 2; }
+
+@media (min-width: 860px) {
+  .layout {
+    grid-template-columns: 236px minmax(0, 1fr);
+    gap: var(--s-8);
+    align-items: start;
+  }
+  .main { order: 2; }
+  .side { order: 1; position: sticky; top: 76px; padding-top: var(--s-8); }
+}
+
 .hero {
   padding-block: var(--s-8) var(--s-7);
   display: grid; gap: var(--s-6);
@@ -37,9 +56,14 @@
 
 .tierNote { margin-top: calc(var(--s-4) * -1); margin-bottom: var(--s-4); max-width: 64ch; }
 
+/* auto-fit sizes against the container, so tiles reflow correctly once the
+   roster rail takes 236px out of the row. A fixed column count keyed to the
+   viewport cramped them instead. */
 .grid {
   display: grid; gap: var(--s-4);
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  /* auto-fill, not auto-fit: empty tracks are kept, so the single-build tier
+     occupies one column instead of stretching across and reading as featured. */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
 .tile {
@@ -82,14 +106,11 @@
 }
 
 /* ---- team roster ---- */
-.teamSection { padding-bottom: var(--s-8); }
-
 .roster {
   list-style: none; padding: 0;
   display: grid; gap: var(--s-4);
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
-@media (min-width: 900px) { .roster { grid-template-columns: repeat(4, 1fr); } }
 
 .person {
   display: flex; flex-direction: column; align-items: center;
@@ -114,6 +135,31 @@
 
 .links { display: flex; gap: var(--s-2); margin-top: auto; }
 
+/* In the rail the cards become compact rows, so four people fit above the fold. */
+@media (min-width: 860px) {
+  .roster { display: flex; flex-direction: column; gap: var(--s-2); }
+
+  .person {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: var(--s-3); row-gap: 2px;
+    align-items: center; text-align: left;
+    padding: var(--s-3);
+  }
+  .person > :global(h3) {
+    grid-column: 2; grid-row: 1;
+    font-size: .875rem; align-self: end;
+  }
+  .avatar, .monogram {
+    grid-column: 1; grid-row: 1 / span 2;
+    width: 40px; height: 40px; font-size: .8125rem;
+  }
+  .links { grid-column: 2; grid-row: 2; margin-top: 0; }
+  .social { width: 26px; height: 26px; }
+  .social svg { width: 14px; height: 14px; }
+}
+
 .social {
   display: grid; place-items: center;
   width: 34px; height: 34px; border-radius: var(--r-pill);
@@ -135,7 +181,4 @@
 }
 .repo:hover { color: var(--accent); text-decoration: none; }
 
-/* Fixed three-up so tiles stay the same width whatever a tier holds */
-@media (min-width: 900px) {
-  .grid { grid-template-columns: repeat(3, 1fr); }
-}
+

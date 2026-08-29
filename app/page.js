@@ -39,59 +39,8 @@ export default function Home() {
 
   return (
     <Shell>
-      <section className={`container ${styles.hero}`}>
-        <div className={styles.heroText}>
-          <h1 className="t-display t-balance">
-            Six builds,
-            <br />
-            one Team Rocket.
-          </h1>
-          <p className={`t-body t-secondary t-balance ${styles.sub}`}>
-            Each one runs on your own Gemini key — paste it once with the key button above and
-            every build below works.
-          </p>
-        </div>
-
-        <HeroSlideshow className={styles.heroArt} slides={HERO_SLIDES} />
-
-      </section>
-
-      {tiers.map((tier) => (
-        <section key={tier.id} className={`container ${styles.tier}`}>
-          <header className={styles.tierHead}>
-            <h2 className="t-h3">{tier.name}</h2>
-            <span className={styles.tierCount}>{tier.builds.length}</span>
-          </header>
-
-          {tier.note && <p className={`t-sm t-secondary ${styles.tierNote}`}>{tier.note}</p>}
-
-          <div className={styles.grid}>
-            {tier.builds.map((b) => (
-              <Link
-                key={b.slug}
-                href={`/${b.slug}`}
-                className={`card card-hover ${styles.tile}`}
-                style={{ "--tint": b.tint }}
-              >
-                <span className={styles.tileIcon} aria-hidden="true">
-                  <Icon name={b.icon} size={22} />
-                </span>
-
-                <div className={styles.tileBody}>
-                  <h3 className="t-h3">{b.name}</h3>
-                  <p className="t-sm t-secondary">{b.solution}</p>
-                </div>
-
-                <span className={styles.tileGo} aria-hidden="true">
-                  <Icon name="arrowRight" size={18} />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ))}
-
-      <section className={`container ${styles.teamSection}`}>
+      <div className={styles.layout}>
+      <aside className={styles.side}>
         <header className={styles.tierHead}>
           <h2 className="t-h3">Team Rocket</h2>
           <span className={styles.tierCount}>{TEAM.length}</span>
@@ -134,9 +83,63 @@ export default function Home() {
             </li>
           ))}
         </ul>
+      </aside>
+
+
+      <div className={styles.main}>
+      <section className={styles.hero}>
+        <div className={styles.heroText}>
+          <h1 className="t-display t-balance">
+            Six builds,
+            <br />
+            one Team Rocket.
+          </h1>
+          <p className={`t-body t-secondary t-balance ${styles.sub}`}>
+            Each one runs on your own Gemini key — paste it once with the key button above and
+            every build below works.
+          </p>
+        </div>
+
+        <HeroSlideshow className={styles.heroArt} slides={HERO_SLIDES} />
+
       </section>
 
-      <footer className={`container ${styles.footer}`}>
+      {tiers.map((tier) => (
+        <section key={tier.id} className={styles.tier}>
+          <header className={styles.tierHead}>
+            <h2 className="t-h3">{tier.name}</h2>
+            <span className={styles.tierCount}>{tier.builds.length}</span>
+          </header>
+
+          {tier.note && <p className={`t-sm t-secondary ${styles.tierNote}`}>{tier.note}</p>}
+
+          <div className={styles.grid}>
+            {tier.builds.map((b) => (
+              <Link
+                key={b.slug}
+                href={`/${b.slug}`}
+                className={`card card-hover ${styles.tile}`}
+                style={{ "--tint": b.tint }}
+              >
+                <span className={styles.tileIcon} aria-hidden="true">
+                  <Icon name={b.icon} size={22} />
+                </span>
+
+                <div className={styles.tileBody}>
+                  <h3 className="t-h3">{b.name}</h3>
+                  <p className="t-sm t-secondary">{b.solution}</p>
+                </div>
+
+                <span className={styles.tileGo} aria-hidden="true">
+                  <Icon name="arrowRight" size={18} />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <footer className={styles.footer}>
         <div className={styles.footCol}>
           <a className={styles.repo} href={REPO} target="_blank" rel="noreferrer noopener">
             <Icon name="github" size={16} />
@@ -146,6 +149,8 @@ export default function Home() {
         </div>
 
       </footer>
+      </div>
+      </div>
     </Shell>
   );
 }
