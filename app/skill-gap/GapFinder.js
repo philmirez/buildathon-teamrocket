@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import { apiPost, getKey } from "@/lib/keys";
+import { DOC_ACCEPT, readDocument } from "@/lib/files";
 import { SAMPLE_JOB, SAMPLE_RESUME } from "./samples";
 import s from "./gap.module.css";
 
@@ -61,8 +62,27 @@ export default function GapFinder() {
   const [plan, setPlan] = useState(null);
   const [role, setRole] = useState("");
   const [error, setError] = useState("");
+  const [reading, setReading] = useState(null);
+  const jobFile = useRef(null);
+  const resumeFile = useRef(null);
 
   const busy = stage >= 0 && stage < STAGES.length;
+
+  /** Upload -> plain text. PDFs are transcribed server-side by Gemini. */
+  async function upload(file, setter, which) {
+    if (!file) return;
+    setError("");
+    try {
+      const text = await readDocument(file, {
+        onStage: (s) => setReading({ which, stage: s }),
+      });
+      setter(text);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setReading(null);
+    }
+  }
   const done = Boolean(diff);
 
   async function analyze() {
@@ -129,32 +149,57 @@ export default function GapFinder() {
             </header>
 
             <div className={s.pair}>
-              <div className="field">
-                <label className="field-label" htmlFor="job">
-                  Job posting
-                </label>
-                <textarea
-                  id="job"
-                  className={`textarea ${s.box}`}
-                  value={job}
-                  onChange={(e) => setJob(e.target.value)}
-                  placeholder="Paste the full posting…"
-                  disabled={busy}
-                />
-              </div>
-              <div className="field">
-                <label className="field-label" htmlFor="resume">
-                  Resume
-                </label>
-                <textarea
-                  id="resume"
-                  className={`textarea ${s.box}`}
-                  value={resume}
-                  onChange={(e) => setResume(e.target.value)}
-                  placeholder="Paste the resume…"
-                  disabled={busy}
-                />
-              </div>
+              {[
+                { id: "job", label: "Job posting", value: job, set: setJob, ref: jobFile,
+                  placeholder: "Paste the full posting\u2026" },
+                { id: "resume", label: "Resume", value: resume, set: setResume, ref: resumeFile,
+                  placeholder: "Paste the resume\u2026" },
+              ].map((f) => (
+                <div className="field" key={f.id}>
+                  <div className={s.fieldHead}>
+                    <label className="field-label" htmlFor={f.id} style={{ margin: 0 }}>
+                      {f.label}
+                    </label>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => f.ref.current?.click()}
+                      disabled={busy || Boolean(reading)}
+                    >
+                      {reading?.which === f.id ? (
+                        <span className="spinner" style={{ width: 13, height: 13 }} />
+                      ) : (
+                        <Icon name="upload" size={14} />
+                      )}
+                      {reading?.which === f.id
+                        ? reading.stage === "extracting"
+                          ? "Reading PDF"
+                          : "Loading"
+                        : "Upload"}
+                    </button>
+                    <input
+                      ref={f.ref}
+                      type="file"
+                      accept={DOC_ACCEPT}
+                      className="sr-only"
+                      onChange={(e) => {
+                        upload(e.target.files?.[0], f.set, f.id);
+                        e.target.value = "";
+                      }}
+                    />
+                  </div>
+                  <textarea
+                    id={f.id}
+                    className={`textarea ${s.box}`}
+                    value={f.value}
+                    onChange={(e) => f.set(e.target.value)}
+                    placeholder={f.placeholder}
+                    disabled={busy}
+                  />
+                  {f.value && (
+                    <p className="field-hint">{f.value.length.toLocaleString()} characters</p>
+                  )}
+                </div>
+              ))}
             </div>
 
             {error && (

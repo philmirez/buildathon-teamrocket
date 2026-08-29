@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import { apiPost, getKey } from "@/lib/keys";
+import { DOC_ACCEPT, readDocument } from "@/lib/files";
 import { wordDiff } from "@/lib/textdiff";
 import { SAMPLE_NEW, SAMPLE_OLD } from "./samples";
 import s from "./differ.module.css";
@@ -133,23 +134,26 @@ export default function Differ() {
   const [changes, setChanges] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [reading, setReading] = useState(null);
   const oldFile = useRef(null);
   const newFile = useRef(null);
 
   const busy = stage >= 0 && stage < STAGES.length;
   const started = stats !== null;
 
-  async function readFile(file, setter) {
+  /** Upload -> plain text. PDFs are transcribed server-side by Gemini. */
+  async function upload(file, setter, which) {
     if (!file) return;
-    if (file.size > 2_000_000) {
-      setError("That file is over 2 MB. Paste the relevant sections instead.");
-      return;
-    }
+    setError("");
     try {
-      setter(await file.text());
-      setError("");
-    } catch {
-      setError("Could not read that file. Plain text works best.");
+      const text = await readDocument(file, {
+        onStage: (s) => setReading({ which, stage: s }),
+      });
+      setter(text);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setReading(null);
     }
   }
 
@@ -231,17 +235,28 @@ export default function Differ() {
                     <button
                       className="btn btn-ghost btn-sm"
                       onClick={() => f.ref.current?.click()}
-                      disabled={busy}
+                      disabled={busy || Boolean(reading)}
                     >
-                      <Icon name="upload" size={14} />
-                      Upload
+                      {reading?.which === f.id ? (
+                        <span className="spinner" style={{ width: 13, height: 13 }} />
+                      ) : (
+                        <Icon name="upload" size={14} />
+                      )}
+                      {reading?.which === f.id
+                        ? reading.stage === "extracting"
+                          ? "Reading PDF"
+                          : "Loading"
+                        : "Upload"}
                     </button>
                     <input
                       ref={f.ref}
                       type="file"
-                      accept=".txt,.md,.markdown,.text,text/*"
+                      accept={DOC_ACCEPT}
                       className="sr-only"
-                      onChange={(e) => readFile(e.target.files?.[0], f.set)}
+                      onChange={(e) => {
+                        upload(e.target.files?.[0], f.set, f.id);
+                        e.target.value = "";
+                      }}
                     />
                   </div>
                   <textarea
@@ -249,7 +264,7 @@ export default function Differ() {
                     className={`textarea ${s.box}`}
                     value={f.value}
                     onChange={(e) => f.set(e.target.value)}
-                    placeholder="Paste this version, or upload a text file…"
+                    placeholder="Paste this version, or upload a PDF…"
                     disabled={busy}
                   />
                   {f.value && (

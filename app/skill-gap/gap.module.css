@@ -80,3 +80,8 @@
 .dayBody { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
 .proofOut { color: var(--green-3); }
 .res { display: inline-flex; align-items: center; gap: 6px; }
+
+.fieldHead {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s-2); margin-bottom: var(--s-2);
+}
