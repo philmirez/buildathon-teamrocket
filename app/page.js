@@ -3,6 +3,7 @@ import HeroSlideshow from "@/components/HeroSlideshow";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import { byTier } from "@/lib/builds";
+import { TEAM, initials } from "@/lib/team";
 import styles from "./page.module.css";
 
 /*
@@ -32,14 +33,6 @@ const HERO_SLIDES = [
 ];
 
 const REPO = "https://github.com/philmirez/buildathon-teamrocket";
-
-/** Credited in the footer; the name is what reads, the handle is the link. */
-const TEAM = [
-  { name: "Phil", handle: "philmirez" },
-  { name: "Allen", handle: "aap7763" },
-  { name: "Mimi", handle: "mimersheree" },
-  { name: "Ray", handle: "roboray01" },
-];
 
 export default function Home() {
   const tiers = byTier();
@@ -98,6 +91,51 @@ export default function Home() {
         </section>
       ))}
 
+      <section className={`container ${styles.teamSection}`}>
+        <header className={styles.tierHead}>
+          <h2 className="t-h3">Team Rocket</h2>
+          <span className={styles.tierCount}>{TEAM.length}</span>
+        </header>
+
+        <ul className={styles.roster}>
+          {TEAM.map((m) => (
+            <li key={m.github} className={`card card-hover ${styles.person}`} style={{ "--tint": m.tint }}>
+              {m.photo ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img className={styles.avatar} src={m.photo} alt="" width={72} height={72} />
+              ) : (
+                <span className={styles.monogram} aria-hidden="true">
+                  {initials(m.name)}
+                </span>
+              )}
+
+              <h3 className="t-h3">{m.name}</h3>
+
+              <div className={styles.links}>
+                <a
+                  className={styles.social}
+                  href={m.linkedin}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={`${m.name} on LinkedIn`}
+                >
+                  <Icon name="linkedin" size={17} />
+                </a>
+                <a
+                  className={styles.social}
+                  href={`https://github.com/${m.github}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={`${m.name} on GitHub`}
+                >
+                  <Icon name="github" size={17} />
+                </a>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <footer className={`container ${styles.footer}`}>
         <div className={styles.footCol}>
           <a className={styles.repo} href={REPO} target="_blank" rel="noreferrer noopener">
@@ -107,22 +145,6 @@ export default function Home() {
           <p className="t-xs t-secondary">Keys stay in your browser.</p>
         </div>
 
-        <ul className={styles.team}>
-          {TEAM.map((m) => (
-            <li key={m.handle}>
-              <a
-                className={styles.member}
-                href={`https://github.com/${m.handle}`}
-                target="_blank"
-                rel="noreferrer noopener"
-                title={`@${m.handle}`}
-              >
-                <Icon name="github" size={14} />
-                {m.name}
-              </a>
-            </li>
-          ))}
-        </ul>
       </footer>
     </Shell>
   );

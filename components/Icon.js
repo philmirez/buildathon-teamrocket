@@ -121,6 +121,13 @@ const PATHS = {
       strokeWidth="1.6"
     />
   ),
+  linkedin: (
+    <>
+      <path d="M4.6 9.2v11.2M15 20.4v-6a2.6 2.6 0 0 0-5.2 0v6m0-11.2v11.2" />
+      <rect x="1.6" y="1.6" width="20.8" height="20.8" rx="3.4" />
+      <circle cx="4.6" cy="5.4" r=".6" fill="currentColor" />
+    </>
+  ),
   scales: (
     <>
       <path d="M12 4.2v16M7.5 20.3h9M4.6 7.4l14.8-1.9" />

@@ -7,10 +7,14 @@ links to all six.
 
 **Repo:** [github.com/philmirez/buildathon-teamrocket](https://github.com/philmirez/buildathon-teamrocket)
 
-Built by Phil ([@philmirez](https://github.com/philmirez)) ·
-Allen ([@aap7763](https://github.com/aap7763)) ·
-Mimi ([@mimersheree](https://github.com/mimersheree)) ·
-Ray ([@roboray01](https://github.com/roboray01))
+### Team Rocket
+
+| | GitHub | LinkedIn |
+|---|---|---|
+| **Phil Ramirez** | [@philmirez](https://github.com/philmirez) | [philmirez](https://www.linkedin.com/in/philmirez/) |
+| **Allen Pang** | [@aap7763](https://github.com/aap7763) | [allenanpang](https://www.linkedin.com/in/allenanpang/) |
+| **Mimi Pomephimkham** | [@mimersheree](https://github.com/mimersheree) | [mimiphim](https://www.linkedin.com/in/mimiphim/) |
+| **Ray Gil** | [@roboray01](https://github.com/roboray01) | [raymundogil](https://www.linkedin.com/in/raymundogil/) |
 
 | Build | Slug | What it does | Keys used |
 |---|---|---|---|
