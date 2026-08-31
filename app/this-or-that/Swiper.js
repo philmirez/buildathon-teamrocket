@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
+import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
 import s from "./swipe.module.css";
 
@@ -103,6 +104,7 @@ export default function Swiper() {
       return;
     }
     setBusy(true);
+    trackRunStarted("this-or-that");
     setError("");
     try {
       const data = await apiPost("/api/this-or-that", {
@@ -121,8 +123,10 @@ export default function Swiper() {
       setPhotos({});
       setPhase("handoff");
       loadPhotos(data.places, data.area || where);
+      trackRunFinished("this-or-that", "success");
     } catch (e) {
       setError(e.message);
+      trackRunFinished("this-or-that", "error");
     } finally {
       setBusy(false);
     }

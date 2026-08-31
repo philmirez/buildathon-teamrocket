@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import Markdown from "@/components/Markdown";
+import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, useKeys } from "@/lib/keys";
 import {
   applyAction,
@@ -89,6 +90,7 @@ export default function Scribe() {
       }
 
       setBusy(true);
+      trackRunStarted("ambient");
       setError("");
       setReply("");
       setLog([]);
@@ -120,8 +122,10 @@ export default function Scribe() {
         if (!(data.actions || []).length) {
           setError(data.reply || "Nothing in there worth filing.");
         }
+        trackRunFinished("ambient", "success");
       } catch (e) {
         setError(e.message);
+        trackRunFinished("ambient", "error");
       } finally {
         setBusy(false);
       }

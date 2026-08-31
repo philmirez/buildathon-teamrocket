@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
+import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
 import { SAMPLE_TEXT } from "./sample";
 import s from "./reader.module.css";
@@ -58,6 +59,7 @@ export default function Reader() {
       return;
     }
     setBusy(true);
+    trackRunStarted("captured");
     setError("");
     setNotice("");
     setImages({});
@@ -69,8 +71,10 @@ export default function Reader() {
       // Warm the first two so the reader never opens on an empty frame.
       render(data.scenes[0], 0);
       if (data.scenes[1]) render(data.scenes[1], 1);
+      trackRunFinished("captured", "success");
     } catch (e) {
       setError(e.message);
+      trackRunFinished("captured", "error");
     } finally {
       setBusy(false);
     }

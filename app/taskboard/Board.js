@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
+import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
 import s from "./board.module.css";
 
@@ -71,6 +72,7 @@ export default function Board() {
       return;
     }
     setBusy(true);
+    trackRunStarted("taskboard");
     setError("");
     setTriage(null);
     try {
@@ -87,8 +89,10 @@ export default function Board() {
           movedAt: now,
         }))
       );
+      trackRunFinished("taskboard", "success");
     } catch (e) {
       setError(e.message);
+      trackRunFinished("taskboard", "error");
     } finally {
       setBusy(false);
     }

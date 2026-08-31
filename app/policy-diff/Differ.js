@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
+import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
 import { DOC_ACCEPT, readDocument } from "@/lib/files";
 import { wordDiff } from "@/lib/textdiff";
@@ -166,6 +167,7 @@ export default function Differ() {
     setStats(null);
     setChanges(null);
     setResult(null);
+    trackRunStarted("policy-diff");
 
     try {
       // Stage 0 is local and instant — the real diff lands before any model runs.
@@ -190,9 +192,11 @@ export default function Differ() {
       });
       setResult(x);
       setStage(STAGES.length);
+      trackRunFinished("policy-diff", "success");
     } catch (err) {
       setError(err.message);
       setStage(-1);
+      trackRunFinished("policy-diff", "error");
     }
   }
 

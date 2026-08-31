@@ -2,8 +2,10 @@ import Link from "next/link";
 import HeroSlideshow from "@/components/HeroSlideshow";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
-import { byTier } from "@/lib/builds";
+import { BUILDS, byTier } from "@/lib/builds";
 import { TEAM, initials } from "@/lib/team";
+import ReferralBanner from "@/components/ReferralBanner";
+import Walkthroughs from "@/components/Walkthroughs";
 import styles from "./page.module.css";
 
 /*
@@ -40,28 +42,21 @@ export default function Home() {
 
   return (
     <Shell>
-      <div className={styles.bannerWrap}>
-      <a
-        className={styles.banner}
+      <ReferralBanner
         href={CLAUDE_CODE}
-        target="_blank"
-        rel="noopener"
-      >
-        <span className={styles.bannerIcon} aria-hidden="true">
-          <Icon name="sparkle" size={16} />
-        </span>
-        <span className={styles.bannerText}>
-          Every one of these six builds was written with <strong>Claude Code</strong>.
-        </span>
-        <span className={styles.bannerCta}>
-          Try it
-          <Icon name="arrowRight" size={15} />
-        </span>
-      </a>
-      </div>
+        classNames={{
+          wrap: styles.bannerWrap,
+          banner: styles.banner,
+          icon: styles.bannerIcon,
+          text: styles.bannerText,
+          cta: styles.bannerCta,
+        }}
+      />
 
       <div className={styles.layout}>
       <aside className={styles.side}>
+        <HeroSlideshow className={styles.sideArt} slides={HERO_SLIDES} />
+
         <header className={styles.tierHead}>
           <h2 className="t-h3">Team Rocket</h2>
           <span className={styles.tierCount}>{TEAM.length}</span>
@@ -127,13 +122,12 @@ export default function Home() {
             one Team Rocket.
           </h1>
           <p className={`t-body t-secondary t-balance ${styles.sub}`}>
-            Each one runs on your own Gemini key — paste it once with the key button above and
-            every build below works.
+            Watch any of them run, then try it yourself below. Each build works on your own
+            Gemini key — paste it once with the key button above.
           </p>
         </div>
 
-        <HeroSlideshow className={styles.heroArt} slides={HERO_SLIDES} />
-
+        <Walkthroughs builds={BUILDS} />
       </section>
 
       {tiers.map((tier) => (

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
+import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
 import { DOC_ACCEPT, readDocument } from "@/lib/files";
 import { SAMPLE_JOB, SAMPLE_RESUME } from "./samples";
@@ -93,6 +94,7 @@ export default function GapFinder() {
     setError("");
     setDiff(null);
     setPlan(null);
+    trackRunStarted("skill-gap");
 
     try {
       setStage(0);
@@ -112,9 +114,11 @@ export default function GapFinder() {
       setPlan(planned);
 
       setStage(STAGES.length);
+      trackRunFinished("skill-gap", "success");
     } catch (e) {
       setError(e.message);
       setStage(-1);
+      trackRunFinished("skill-gap", "error");
     }
   }
 

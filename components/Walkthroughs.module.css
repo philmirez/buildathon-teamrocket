@@ -1,0 +1,25 @@
+.wrap { display: flex; flex-direction: column; gap: var(--s-4); padding-bottom: var(--s-7); }
+
+.head {
+  display: flex; align-items: center; gap: var(--s-3);
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--border);
+}
+.count {
+  display: grid; place-items: center;
+  min-width: 22px; height: 22px; padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--bg-sunken); border: 1px solid var(--border);
+  font-size: .6875rem; font-weight: 700; color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabs { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+.player {
+  width: 100%; height: auto;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}

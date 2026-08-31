@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
 import { KEY_SPECS, clearKeys, setKey, useKeys } from "@/lib/keys";
+import { trackKeySaved } from "@/lib/analytics";
 import styles from "./Shell.module.css";
 
 /** Masked key input with a reveal toggle. */
@@ -48,16 +49,33 @@ function KeyField({ name, spec, value }) {
 function KeyVault({ onClose }) {
   const keys = useKeys();
   const ref = useRef(null);
+  // Which keys were already set when the dialog opened. setKey fires on every
+  // keystroke, so tracking there would emit an event per character; instead we
+  // compare once on close and report only newly-added keys.
+  const atOpen = useRef(null);
+  if (atOpen.current === null) {
+    atOpen.current = Object.fromEntries(
+      Object.keys(KEY_SPECS).map((n) => [n, Boolean(keys[n])])
+    );
+  }
+
+  const close = () => {
+    for (const name of Object.keys(KEY_SPECS)) {
+      if (keys[name] && !atOpen.current[name]) trackKeySaved(name);
+    }
+    onClose();
+  };
 
   useEffect(() => {
-    const onKeyDown = (e) => e.key === "Escape" && onClose();
+    const onKeyDown = (e) => e.key === "Escape" && close();
     document.addEventListener("keydown", onKeyDown);
     ref.current?.querySelector("input")?.focus();
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div className={styles.scrim} onMouseDown={onClose}>
+    <div className={styles.scrim} onMouseDown={close}>
       <div
         className={styles.sheet}
         role="dialog"
@@ -70,7 +88,7 @@ function KeyVault({ onClose }) {
           <h2 className="t-h2" id="vault-title">
             API keys
           </h2>
-          <button className="btn btn-ghost btn-icon btn-sm" onClick={onClose} aria-label="Close">
+          <button className="btn btn-ghost btn-icon btn-sm" onClick={close} aria-label="Close">
             <Icon name="close" />
           </button>
         </div>
@@ -90,7 +108,7 @@ function KeyVault({ onClose }) {
             <Icon name="trash" size={16} />
             Clear all
           </button>
-          <button className="btn" onClick={onClose}>
+          <button className="btn" onClick={close}>
             Done
           </button>
         </div>
