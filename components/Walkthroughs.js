@@ -9,9 +9,10 @@ import s from "./Walkthroughs.module.css";
 /**
  * One player, tabbed across builds.
  *
- * `preload="none"` matters: six clips at a few MB each would otherwise be
- * fetched on page load. Only the selected clip loads, and switching tabs
- * remounts the element via `key` so the new source actually takes.
+ * `preload="metadata"` fetches only the header of the selected clip — a few KB,
+ * not the whole file — so page load stays cheap while iOS still has an element
+ * it can start playback from. Switching tabs remounts via `key` so the new
+ * source actually takes.
  */
 export default function Walkthroughs({ builds }) {
   const withVideo = builds.filter((b) => b.video);
@@ -57,7 +58,10 @@ export default function Walkthroughs({ builds }) {
           ref={videoRef}
           className={s.player}
           controls
-          preload="none"
+          /* iOS will not start a JS-initiated play() on an element with no
+             loaded data, which made the overlay tap do nothing. Metadata is a
+             few KB and gives the element something to start from. */
+          preload="metadata"
           playsInline
           poster={current.poster}
           onPlay={() => setStarted(true)}
@@ -72,7 +76,15 @@ export default function Walkthroughs({ builds }) {
           <button
             type="button"
             className={s.overlay}
-            onClick={() => videoRef.current?.play()}
+            onClick={() => {
+              const el = videoRef.current;
+              if (!el) return;
+              const p = el.play();
+              // Reveal the native controls either way: if the gesture is
+              // rejected we must not leave the user tapping a dead overlay.
+              if (p?.catch) p.then(() => setStarted(true)).catch(() => setStarted(true));
+              else setStarted(true);
+            }}
             aria-label={`Play the ${current.name} walkthrough`}
           >
             <span className={s.play} aria-hidden="true">

@@ -1,0 +1,156 @@
+1
+00:00:00,000 --> 00:00:02,840
+All right, and Project 3 is This or That.
+
+2
+00:00:02,840 --> 00:00:04,800
+For this project, we wanted to solve
+
+3
+00:00:04,800 --> 00:00:07,440
+group dining indecision and waste times.
+
+4
+00:00:07,440 --> 00:00:09,480
+This or That simplifies
+
+5
+00:00:09,480 --> 00:00:11,160
+restaurant discovery into a fast,
+
+6
+00:00:11,160 --> 00:00:13,400
+single-device swipe interface
+
+7
+00:00:13,400 --> 00:00:16,000
+that finds a common consensus
+
+8
+00:00:16,000 --> 00:00:17,840
+among friends.
+
+9
+00:00:17,840 --> 00:00:20,280
+So here I have where I want to go,
+
+10
+00:00:20,280 --> 00:00:22,680
+any constraints, and who's eating.
+
+11
+00:00:22,680 --> 00:00:24,760
+It's going to build a deck for us
+
+12
+00:00:24,760 --> 00:00:27,440
+and allow Phil plus Alan to go through
+
+13
+00:00:27,440 --> 00:00:29,160
+and then find and combine interests
+
+14
+00:00:29,160 --> 00:00:30,760
+at the end.
+
+15
+00:00:30,760 --> 00:00:33,240
+All right, so this is for Phil's turn.
+
+16
+00:00:33,240 --> 00:00:36,320
+As you can see, it came up
+
+17
+00:00:36,320 --> 00:00:38,000
+with a few locations.
+
+18
+00:00:38,000 --> 00:00:40,040
+Phil is easygoing,
+
+19
+00:00:40,040 --> 00:00:42,200
+so he likes all the locations.
+
+20
+00:00:42,200 --> 00:00:44,200
+And then for Alan, we're just going to
+
+21
+00:00:44,200 --> 00:00:46,400
+go ahead and like maybe one
+
+22
+00:00:46,400 --> 00:00:49,080
+to show that it's matching correctly.
+
+23
+00:00:49,080 --> 00:00:52,000
+All right, and then after it goes through
+
+24
+00:00:52,000 --> 00:00:53,360
+everyone's turns,
+
+25
+00:00:53,360 --> 00:00:55,760
+it then aggregates the matches
+
+26
+00:00:55,760 --> 00:00:58,200
+and produces this final page,
+
+27
+00:00:58,200 --> 00:01:00,680
+which shows El Dorado Cafe
+
+28
+00:01:00,680 --> 00:01:02,440
+as a unanimous decision.
+
+29
+00:01:02,440 --> 00:01:05,120
+Down here, you can also see it highlights
+
+30
+00:01:05,120 --> 00:01:06,880
+the likes that Phil made,
+
+31
+00:01:06,880 --> 00:01:09,160
+as well as the ones that Alan made.
+
+32
+00:01:09,160 --> 00:01:11,440
+To guarantee bulletproof execution,
+
+33
+00:01:11,440 --> 00:01:13,480
+we prioritized a zero-friction,
+
+34
+00:01:13,480 --> 00:01:15,560
+pass-the-phone local setup.
+
+35
+00:01:15,560 --> 00:01:17,680
+Ideally, in future stages, we might have
+
+36
+00:01:17,680 --> 00:01:20,400
+this branch out to a multi-phone or,
+
+37
+00:01:20,400 --> 00:01:23,720
+you know, access from wherever you are
+
+38
+00:01:23,720 --> 00:01:25,720
+type of remote access,
+
+39
+00:01:25,720 --> 00:01:27,048
+so that friends can use this tool
+

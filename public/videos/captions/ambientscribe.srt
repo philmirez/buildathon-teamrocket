@@ -1,0 +1,164 @@
+1
+00:00:00,600 --> 00:00:02,100
+Okay, this is Team Rocket,
+
+2
+00:00:02,100 --> 00:00:03,800
+Project number one, Ambient Scribe.
+
+3
+00:00:03,800 --> 00:00:05,700
+The purpose of this, or the problem
+
+4
+00:00:05,700 --> 00:00:07,100
+that we're trying to solve,
+
+5
+00:00:07,100 --> 00:00:09,100
+is that manual note organization
+
+6
+00:00:09,100 --> 00:00:10,800
+creates too much friction,
+
+7
+00:00:10,800 --> 00:00:12,600
+causing key ideas to get lost.
+
+8
+00:00:12,600 --> 00:00:14,200
+Ambient AI Scribe
+
+9
+00:00:14,200 --> 00:00:16,600
+automatically transcribes raw voice memos,
+
+10
+00:00:16,600 --> 00:00:18,300
+extracts the core insights,
+
+11
+00:00:18,300 --> 00:00:20,000
+and slots it directly into
+
+12
+00:00:20,000 --> 00:00:21,700
+a structured folder hierarchy
+
+13
+00:00:21,700 --> 00:00:23,200
+with zero manual tagging.
+
+14
+00:00:23,700 --> 00:00:26,000
+So here, I'll start by recording a note:
+
+15
+00:00:27,700 --> 00:00:29,500
+Need to update the back-end schema
+
+16
+00:00:29,500 --> 00:00:31,300
+for user tokens by Friday
+
+17
+00:00:31,300 --> 00:00:33,300
+and send the invoice to Sarah.
+
+18
+00:00:35,800 --> 00:00:37,400
+The back end immediately parses
+
+19
+00:00:37,400 --> 00:00:39,100
+the transcript, creates a clean
+
+20
+00:00:39,100 --> 00:00:41,200
+Markdown note, and dynamically sorts it
+
+21
+00:00:41,200 --> 00:00:44,100
+under the existing Engineering folders.
+
+22
+00:00:44,100 --> 00:00:46,400
+It also creates a separate task card
+
+23
+00:00:46,400 --> 00:00:48,300
+in the Admin folder for the invoice.
+
+24
+00:00:48,300 --> 00:00:49,400
+No drag-and-drop,
+
+25
+00:00:49,400 --> 00:00:50,700
+no folder tree management,
+
+26
+00:00:50,700 --> 00:00:52,300
+it routes the content into place
+
+27
+00:00:52,300 --> 00:00:54,000
+based on semantic intent.
+
+28
+00:00:55,700 --> 00:00:57,100
+So here's the user tokens
+
+29
+00:00:57,100 --> 00:00:58,400
+schema update note,
+
+30
+00:00:59,700 --> 00:01:01,300
+and then under invoicing,
+
+31
+00:01:01,300 --> 00:01:02,400
+we have a task
+
+32
+00:01:02,400 --> 00:01:04,000
+to send the invoice to Sarah.
+
+33
+00:01:06,700 --> 00:01:08,000
+To ship this cleanly,
+
+34
+00:01:08,000 --> 00:01:09,900
+we cut out some autonomous
+
+35
+00:01:09,900 --> 00:01:11,700
+multi-tiered directory nesting
+
+36
+00:01:11,700 --> 00:01:13,500
+and continuous background streaming.
+
+37
+00:01:13,500 --> 00:01:15,500
+We focused strictly on high-accuracy
+
+38
+00:01:15,500 --> 00:01:17,300
+transcription to note classification.
+
+39
+00:01:17,300 --> 00:01:19,400
+For next steps, we would like to
+
+40
+00:01:19,400 --> 00:01:21,500
+automatically add weekly summary notes
+
+41
+00:01:21,500 --> 00:01:24,000
+as well as auto-generated folders.
+

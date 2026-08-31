@@ -1,0 +1,144 @@
+1
+00:00:00,000 --> 00:00:02,200
+All right. And so for our fourth project,
+
+2
+00:00:02,200 --> 00:00:04,700
+the Policy Diff Tool, this was one of
+
+3
+00:00:04,700 --> 00:00:06,600
+the build concepts provided by
+
+4
+00:00:06,600 --> 00:00:09,200
+the hosts of the Build-a-thon.
+
+5
+00:00:09,200 --> 00:00:11,600
+So, for this one, what are we trying
+
+6
+00:00:11,600 --> 00:00:14,100
+to solve? We're just trying to solve
+
+7
+00:00:14,100 --> 00:00:16,700
+the discrepancies between policy changes
+
+8
+00:00:16,700 --> 00:00:19,300
+in two different pairs of policies.
+
+9
+00:00:19,300 --> 00:00:21,600
+And where I can see this being used or
+
+10
+00:00:21,600 --> 00:00:24,100
+where we can see this being used is in,
+
+11
+00:00:24,100 --> 00:00:26,500
+you know, policy updates and more.
+
+12
+00:00:26,500 --> 00:00:29,000
+So here we just input the first policy
+
+13
+00:00:29,000 --> 00:00:31,400
+and then the updated policy or the new
+
+14
+00:00:31,400 --> 00:00:33,600
+version. Here we also have the upload
+
+15
+00:00:33,600 --> 00:00:35,800
+buttons here if you want to drag and drop.
+
+16
+00:00:35,800 --> 00:00:38,000
+Then we go ahead and submit the diff.
+
+17
+00:00:38,000 --> 00:00:40,000
+And so what's going on right now
+
+18
+00:00:40,000 --> 00:00:42,400
+is that the LLM is processing both texts
+
+19
+00:00:42,400 --> 00:00:44,500
+side by side. And then later
+
+20
+00:00:44,500 --> 00:00:47,300
+it will surface the operational changes
+
+21
+00:00:47,300 --> 00:00:49,300
+and rank them by severity.
+
+22
+00:00:49,300 --> 00:00:51,900
+And some of the scope decisions and next
+
+23
+00:00:51,900 --> 00:00:54,000
+steps will be discussed after we go
+
+24
+00:00:54,000 --> 00:00:56,400
+through results. So as you can see,
+
+25
+00:00:56,400 --> 00:00:59,000
+12 changes were found: 8 rewords,
+
+26
+00:00:59,000 --> 00:01:01,500
+3 terms added, and 1 removed.
+
+27
+00:01:01,500 --> 00:01:03,800
+So here we can see just an overview
+
+28
+00:01:03,800 --> 00:01:06,500
+of the differences: nine that matter,
+
+29
+00:01:06,500 --> 00:01:09,500
+1, 2, 3... everything else that's
+
+30
+00:01:09,500 --> 00:01:13,100
+changed. And that's it for this project.
+
+31
+00:01:13,100 --> 00:01:15,300
+We scoped to a single-page document
+
+32
+00:01:15,300 --> 00:01:17,400
+with an upload feature as well as
+
+33
+00:01:17,400 --> 00:01:20,000
+pasting text. For future iterations, we
+
+34
+00:01:20,000 --> 00:01:22,300
+might look at potentially grabbing live
+
+35
+00:01:22,300 --> 00:01:24,700
+policy documents from a website or API
+
+36
+00:01:24,700 --> 00:01:27,200
+and doing diff based on that.
+

@@ -1,0 +1,176 @@
+1
+00:00:01,000 --> 00:00:02,800
+And for our last project,
+
+2
+00:00:02,800 --> 00:00:05,500
+this is the SkillGap application.
+
+3
+00:00:05,500 --> 00:00:09,600
+So here, you can go ahead and upload
+
+4
+00:00:09,600 --> 00:00:13,500
+a job posting or a resume
+
+5
+00:00:13,500 --> 00:00:15,500
+and go ahead and find the gaps.
+
+6
+00:00:15,500 --> 00:00:18,239
+And the problem that we're trying to solve
+
+7
+00:00:18,239 --> 00:00:18,500
+here
+
+8
+00:00:18,500 --> 00:00:20,700
+is that, you know, job rejections
+
+9
+00:00:20,700 --> 00:00:22,000
+don't really tell you what you missed.
+
+10
+00:00:22,000 --> 00:00:24,000
+SkillGap goes a step above that
+
+11
+00:00:24,000 --> 00:00:26,102
+and just outlines exactly what you're
+
+12
+00:00:26,102 --> 00:00:26,500
+missing
+
+13
+00:00:26,500 --> 00:00:28,000
+from the requirements
+
+14
+00:00:28,000 --> 00:00:30,400
+and generates an actionable two-week
+
+15
+00:00:30,400 --> 00:00:31,600
+recovery plan.
+
+16
+00:00:31,600 --> 00:00:33,200
+So, here it's going ahead
+
+17
+00:00:33,200 --> 00:00:35,800
+and reading both documents, finding
+
+18
+00:00:35,800 --> 00:00:37,700
+the difference between the two documents,
+
+19
+00:00:37,700 --> 00:00:39,500
+and then drafting the output.
+
+20
+00:00:39,500 --> 00:00:41,409
+So the first thing that you'll see up here
+
+21
+00:00:41,409 --> 00:00:41,500
+is
+
+22
+00:00:41,500 --> 00:00:43,000
+a 0 to 100 score
+
+23
+00:00:43,000 --> 00:00:44,395
+based on how well you meet the
+
+24
+00:00:44,395 --> 00:00:45,000
+requirements.
+
+25
+00:00:45,000 --> 00:00:46,500
+Down here, the requirements,
+
+26
+00:00:46,500 --> 00:00:47,700
+whether you meet them,
+
+27
+00:00:47,700 --> 00:00:49,300
+somewhat meet them,
+
+28
+00:00:49,300 --> 00:00:50,800
+or do not meet them at all.
+
+29
+00:00:50,800 --> 00:00:52,021
+And then down here you can see it's
+
+30
+00:00:52,021 --> 00:00:52,300
+drafting
+
+31
+00:00:52,300 --> 00:00:54,000
+a two-week plan to fill in those gaps.
+
+32
+00:00:57,600 --> 00:01:00,200
+And so for this two-week plan,
+
+33
+00:01:00,200 --> 00:01:03,500
+you can see here it outlines exactly
+
+34
+00:01:03,500 --> 00:01:05,000
+what the task is,
+
+35
+00:01:05,000 --> 00:01:06,800
+what the output would look like,
+
+36
+00:01:06,800 --> 00:01:09,800
+and then a link to helpful documentation.
+
+37
+00:01:10,800 --> 00:01:13,500
+And so for this one,
+
+38
+00:01:13,500 --> 00:01:16,400
+we did keep everything local, again,
+
+39
+00:01:16,400 --> 00:01:19,000
+to use the information that we have
+
+40
+00:01:19,000 --> 00:01:21,000
+and that the user can provide.
+
+41
+00:01:21,000 --> 00:01:23,733
+It's also not currently scaled for online
+
+42
+00:01:23,733 --> 00:01:24,000
+use,
+
+43
+00:01:24,000 --> 00:01:27,023
+which might be a feature that comes in
+
+44
+00:01:27,023 --> 00:01:27,500
+new...
+

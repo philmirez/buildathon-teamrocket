@@ -1,0 +1,112 @@
+1
+00:00:00,749 --> 00:00:02,300
+All right, Team Rocket again here
+
+2
+00:00:02,300 --> 00:00:04,000
+with project number two, task board.
+
+3
+00:00:06,000 --> 00:00:07,300
+So, here, the problem
+
+4
+00:00:07,300 --> 00:00:08,800
+that we were trying to solve is that
+
+5
+00:00:08,800 --> 00:00:10,800
+with many projects, there remains to be
+
+6
+00:00:10,800 --> 00:00:13,200
+open-ended tasks without fixed deadlines,
+
+7
+00:00:13,200 --> 00:00:15,300
+which get frequently neglected.
+
+8
+00:00:15,300 --> 00:00:17,800
+This task board integrates task weighting
+
+9
+00:00:17,800 --> 00:00:20,200
+directly into a visual progress bar,
+
+10
+00:00:20,200 --> 00:00:22,500
+which you will see on the output screen.
+
+11
+00:00:32,800 --> 00:00:34,600
+Okay, and so, yeah,
+
+12
+00:00:34,600 --> 00:00:36,700
+as you can see here, we have a progress
+
+13
+00:00:36,700 --> 00:00:38,700
+bar at the top.
+
+14
+00:00:38,700 --> 00:00:40,700
+We have the Kanban board over here,
+
+15
+00:00:40,700 --> 00:00:43,000
+and as we move items into In Progress,
+
+16
+00:00:43,000 --> 00:00:46,000
+you can see that it's starting
+
+17
+00:00:46,000 --> 00:00:47,800
+to progress the board.
+
+18
+00:00:52,200 --> 00:00:54,600
+And then when we move items to Done,
+
+19
+00:00:54,600 --> 00:00:56,800
+then you start seeing a new board get --
+
+20
+00:00:56,800 --> 00:00:59,000
+or I should say, a new progress bar
+
+21
+00:00:59,000 --> 00:01:00,600
+begin to fill.
+
+22
+00:01:03,200 --> 00:01:05,033
+Right, so with this, we did keep it
+
+23
+00:01:05,033 --> 00:01:05,400
+simple,
+
+24
+00:01:05,400 --> 00:01:07,800
+and we did have to cut future features,
+
+25
+00:01:07,800 --> 00:01:10,200
+which we hope to implement in the future.
+
+26
+00:01:10,200 --> 00:01:12,700
+One of which is multi-tenant authorization
+
+27
+00:01:12,700 --> 00:01:15,500
+and complex multi-board workspaces
+
+28
+00:01:15,500 --> 00:01:18,500
+to nail multi-faceted projects.
+
