@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import Icon from "./Icon";
+import { trackWalkthroughCta } from "@/lib/analytics";
 import s from "./Walkthroughs.module.css";
 
 /**
@@ -54,7 +56,17 @@ export default function Walkthroughs({ builds }) {
         <a href={current.video}>Download it instead.</a>
       </video>
 
-      <p className="t-sm t-secondary">{current.solution}</p>
+      <div className={s.foot}>
+        <p className="t-sm t-secondary">{current.solution}</p>
+        <Link
+          className="btn"
+          href={`/${current.slug}`}
+          onClick={() => trackWalkthroughCta(current.slug)}
+        >
+          Let me test it
+          <Icon name="arrowRight" size={16} />
+        </Link>
+      </div>
     </section>
   );
 }

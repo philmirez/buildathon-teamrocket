@@ -23,3 +23,9 @@
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
 }
+
+.foot {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s-4); flex-wrap: wrap;
+}
+.foot p { flex: 1 1 240px; }
