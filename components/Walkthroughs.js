@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Icon from "./Icon";
 import { trackWalkthroughCta } from "@/lib/analytics";
 import s from "./Walkthroughs.module.css";
@@ -16,6 +16,15 @@ import s from "./Walkthroughs.module.css";
 export default function Walkthroughs({ builds }) {
   const withVideo = builds.filter((b) => b.video);
   const [active, setActive] = useState(withVideo[0]?.slug);
+  // The overlay only covers the un-started state; once playing, the native
+  // controls take over. Switching tabs remounts the video, so this resets too.
+  const [started, setStarted] = useState(false);
+  const videoRef = useRef(null);
+
+  const select = (slug) => {
+    setActive(slug);
+    setStarted(false);
+  };
 
   if (!withVideo.length) return null;
   const current = withVideo.find((b) => b.slug === active) || withVideo[0];
@@ -34,7 +43,7 @@ export default function Walkthroughs({ builds }) {
             role="tab"
             aria-selected={b.slug === current.slug}
             className={`chip ${b.slug === current.slug ? "chip-selected" : ""}`}
-            onClick={() => setActive(b.slug)}
+            onClick={() => select(b.slug)}
           >
             <Icon name={b.icon} size={14} />
             {b.name}
@@ -42,19 +51,36 @@ export default function Walkthroughs({ builds }) {
         ))}
       </div>
 
-      <video
-        key={current.slug}
-        className={s.player}
-        controls
-        preload="none"
-        playsInline
-        poster={current.poster}
-        aria-label={`${current.name} walkthrough`}
-      >
-        <source src={current.video} type="video/mp4" />
-        Your browser can&apos;t play this video.{" "}
-        <a href={current.video}>Download it instead.</a>
-      </video>
+      <div className={s.stage}>
+        <video
+          key={current.slug}
+          ref={videoRef}
+          className={s.player}
+          controls
+          preload="none"
+          playsInline
+          poster={current.poster}
+          onPlay={() => setStarted(true)}
+          aria-label={`${current.name} walkthrough`}
+        >
+          <source src={current.video} type="video/mp4" />
+          Your browser can&apos;t play this video.{" "}
+          <a href={current.video}>Download it instead.</a>
+        </video>
+
+        {!started && (
+          <button
+            type="button"
+            className={s.overlay}
+            onClick={() => videoRef.current?.play()}
+            aria-label={`Play the ${current.name} walkthrough`}
+          >
+            <span className={s.play} aria-hidden="true">
+              <Icon name="play" size={26} />
+            </span>
+          </button>
+        )}
+      </div>
 
       <div className={s.foot}>
         <p className="t-sm t-secondary">{current.solution}</p>

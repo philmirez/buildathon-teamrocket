@@ -16,13 +16,39 @@
 
 .tabs { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 
+.stage { position: relative; }
+
 .player {
+  display: block;
   width: 100%; height: auto;
   aspect-ratio: 16 / 9;
   background: #000;
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
 }
+
+/* Covers the poster only until playback starts. */
+.overlay {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  border: 0; padding: 0; cursor: pointer;
+  border-radius: var(--r-lg);
+  background: rgba(8, 10, 14, 0.34);
+  transition: background var(--motion);
+}
+.overlay:hover { background: rgba(8, 10, 14, 0.14); }
+
+.play {
+  display: grid; place-items: center;
+  width: 72px; height: 72px; border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.94);
+  color: #101620;
+  padding-left: 4px; /* optical centring for the triangle */
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  transition: transform var(--motion), background var(--motion);
+}
+.overlay:hover .play { transform: scale(1.08); background: #fff; }
+.overlay:active .play { transform: scale(0.98); }
 
 .foot {
   display: flex; align-items: center; justify-content: space-between;
