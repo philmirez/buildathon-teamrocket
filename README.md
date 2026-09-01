@@ -3,6 +3,8 @@
 Six AI builds behind one Next.js app. Each lives at its own slug; the home page
 links to all six.
 
+**Result:** 🥉 Third place, DC DevFest 2026 Buildathon.
+
 **Live:** [teamrocket.website](https://teamrocket.website)
 
 **Repo:** [github.com/philmirez/buildathon-teamrocket](https://github.com/philmirez/buildathon-teamrocket)
@@ -21,7 +23,7 @@ links to all six.
 | Ambient Scribe | [`/ambient`](/ambient) | Talk. An agent decides the folders, writes the notes, and files them. | Gemini |
 | Captured Memory | [`/captured`](/captured) | Paste a chapter or transcript; each scene illustrates itself. | Gemini **(billing on)**, Pixabay *(optional)* |
 | Taskboard | [`/taskboard`](/taskboard) | Kanban cards double as segments of one effort-weighted progress bar. | Gemini |
-| This or That | [`/this-or-that`](/this-or-that) | Group swipes one restaurant deck; an agent resolves the overlap. | Gemini, Google Places *(optional)*, Pixabay *(optional)* |
+| This or That | [`/this-or-that`](/this-or-that) | Group swipes one restaurant deck; the overlap is counted, not asked. | Gemini, Google Places *(optional)*, Pixabay *(optional)* |
 | Skill Gap | [`/skill-gap`](/skill-gap) | Diff a resume against a posting; get the gap and fourteen days. | Gemini |
 | Policy Diff | [`/policy-diff`](/policy-diff) | Diff two policy versions; plain-language changes ranked by who they hit. | Gemini |
 

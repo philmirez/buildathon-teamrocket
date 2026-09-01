@@ -138,6 +138,16 @@
 }
 
 .tileBody { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+.tileTitle { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2); }
+.tileNew {
+  display: flex; align-items: flex-start; gap: var(--s-2);
+  color: var(--tint);
+}
+.tileNew svg { flex: none; margin-top: 1px; }
+.tileNew span {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
 
 .tileGo {
   display: grid; place-items: center; width: 28px; height: 42px;

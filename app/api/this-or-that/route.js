@@ -9,10 +9,11 @@ import { geminiJSON, errorResponse, resolveKey } from "@/lib/gemini";
  *             restaurant via Google Places, so the cards show the place instead
  *             of a hashed gradient. Falls back to cuisine-matched stock and
  *             then to nothing at all; a card without photos still works.
- *   decide -> reads every member's swipes and picks the table. This is the part
- *             a plain intersection cannot do: when nobody's likes overlap, it
- *             has to reason about whose constraint is hard and whose is a
- *             preference, and say so out loud.
+ *   narrate-> does NOT decide anything. The table is picked by counting swipes
+ *             in lib/decide.js, on the client, before this is ever called. All
+ *             this stage does is say the already-made decision out loud in a
+ *             voice worth reading. It is handed the counts and can only return
+ *             prose; the winner is not one of its output fields.
  */
 
 const DECK_SCHEMA = {
@@ -40,17 +41,15 @@ const DECK_SCHEMA = {
   required: ["area", "places"],
 };
 
-const DECIDE_SCHEMA = {
+const NARRATE_SCHEMA = {
   type: "object",
   properties: {
-    winner: { type: "string" },
     headline: { type: "string" },
     why: { type: "string" },
     tradeoff: { type: "string" },
-    runnerUp: { type: "string" },
   },
-  propertyOrdering: ["winner", "headline", "why", "tradeoff", "runnerUp"],
-  required: ["winner", "headline", "why"],
+  propertyOrdering: ["headline", "why", "tradeoff"],
+  required: ["headline", "why"],
 };
 
 const DECK = `You propose restaurants a group could actually go to tonight.
@@ -83,24 +82,25 @@ WHEN THE AREA IS COORDINATES
   neighbourhood and city those coordinates fall in, use it, and name it in the
   "area" field so the user can confirm you placed them correctly.`;
 
-const DECIDE = `You settle where a group is eating.
+const NARRATE = `You read out a decision that has already been made.
 
-You get each member's yes and no swipes. Decide the table.
+A group swiped through a deck of restaurants. The winner was determined by
+counting the yes votes — not by you, and not by anything you could argue with.
+Your only job is to say it well.
 
 Rules:
-- A place everyone swiped yes on wins almost automatically — say so plainly.
-- When nothing is unanimous, do the real work: find the option with the widest
-  yes coverage and no hard objection against it. Someone's dietary "no" is a
-  hard constraint; someone's "too expensive" is softer; a mild preference is
-  softest.
-- Never pick a place a member explicitly swiped no on when an alternative
-  exists. If you must, say whose no you are overriding and why.
-- "headline" is one short line to read out to the table. Confident, not hedged.
-- "why" is two sentences naming which members' picks this satisfies.
-- "tradeoff" names who compromised and on what. Omit only when the pick was
-  unanimous.
-- "runnerUp" is the fallback if the winner is booked.
-- "winner" and "runnerUp" must be exact names from the deck.`;
+- The vote counts you are given are the complete evidence. Never invent a reason
+  someone swiped the way they did: a swipe carries no reason, and guessing at
+  one ("Allen wanted somewhere quieter") puts words in a real person's mouth.
+- You may use the winning card's own details — its cuisine, price, vibe, hook,
+  the dish — to say why the table will enjoy it. That is on the card, so it is
+  fair game.
+- "headline" is one short line to read out to the table. Confident, present
+  tense, no hedging, no restating the vote count as a statistic.
+- "why" is at most two sentences. Name the members who said yes, by name.
+- "tradeoff" names who is compromising and says it kindly. Return an empty
+  string when the vote was unanimous — do not manufacture a downside.
+- Never name a restaurant other than the winner and the runner-up given to you.`;
 
 /* --------------------------- restaurant photos --------------------------- */
 
@@ -233,21 +233,27 @@ GROUP SIZE: ${body.members?.length || 2}`,
       return Response.json(deck);
     }
 
-    if (body.stage === "decide") {
-      const decision = await geminiJSON({
-        apiKey,
-        system: DECIDE,
-        schema: DECIDE_SCHEMA,
-        temperature: 0.4,
-        prompt: `DECK:
-${JSON.stringify(body.places || [], null, 1)}
+    if (body.stage === "narrate") {
+      const winner = (body.winner || "").trim();
+      if (!winner) return Response.json({ error: "Nothing to narrate." }, { status: 400 });
 
-SWIPES BY MEMBER:
-${JSON.stringify(body.votes || {}, null, 1)}
+      const copy = await geminiJSON({
+        apiKey,
+        system: NARRATE,
+        schema: NARRATE_SCHEMA,
+        temperature: 0.6,
+        prompt: `THE TABLE IS: ${winner}${body.unanimous ? " (unanimous)" : ""}
+RUNNER-UP: ${body.runnerUp || "none"}
+
+THE WINNING CARD:
+${JSON.stringify(body.card || {}, null, 1)}
+
+WHO SAID YES: ${(body.yes || []).join(", ") || "nobody"}
+WHO SAID NO: ${(body.no || []).join(", ") || "nobody"}
 
 CONSTRAINTS STATED UP FRONT: ${body.craving || "none"}`,
       });
-      return Response.json(decision);
+      return Response.json(copy);
     }
 
     return Response.json({ error: "Unknown stage." }, { status: 400 });

@@ -54,4 +54,21 @@
   display: flex; align-items: center; justify-content: space-between;
   gap: var(--s-4); flex-wrap: wrap;
 }
-.foot p { flex: 1 1 240px; }
+.blurb { flex: 1 1 240px; display: grid; gap: var(--s-1); }
+.stamp { opacity: 0.75; }
+
+.whatsNew {
+  display: flex; align-items: flex-start; gap: var(--s-3);
+  padding: var(--s-3) var(--s-4); border-radius: var(--r-md);
+  color: var(--tint);
+  background: color-mix(in srgb, var(--tint) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tint) 26%, transparent);
+}
+.whatsNew svg { flex: none; margin-top: 2px; }
+
+/* Sits on the tab itself, so "this one changed" is legible before any click. */
+.dot {
+  width: 6px; height: 6px; border-radius: 50%; flex: none;
+  background: var(--red-3);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red-3) 22%, transparent);
+}
