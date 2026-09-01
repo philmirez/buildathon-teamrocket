@@ -152,8 +152,19 @@ export default function Home() {
                 </span>
 
                 <div className={styles.tileBody}>
-                  <h3 className="t-h3">{b.name}</h3>
+                  <div className={styles.tileTitle}>
+                    <h3 className="t-h3">{b.name}</h3>
+                    {b.updated && <span className="badge badge-red">Updated</span>}
+                  </div>
                   <p className="t-sm t-secondary">{b.solution}</p>
+                  {b.updated && (
+                    <p className={`t-xs ${styles.tileNew}`}>
+                      <Icon name="sparkle" size={13} />
+                      <span>
+                        New {b.updated.on} — {b.updated.note}.
+                      </span>
+                    </p>
+                  )}
                 </div>
 
                 <span className={styles.tileGo} aria-hidden="true">

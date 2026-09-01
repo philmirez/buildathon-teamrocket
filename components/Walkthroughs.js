@@ -20,11 +20,15 @@ export default function Walkthroughs({ builds }) {
   // The overlay only covers the un-started state; once playing, the native
   // controls take over. Switching tabs remounts the video, so this resets too.
   const [started, setStarted] = useState(false);
+  // Which updated builds the visitor has actually looked at this session. A dot
+  // that never clears is just decoration; this one behaves like a notification.
+  const [seen, setSeen] = useState(() => new Set());
   const videoRef = useRef(null);
 
   const select = (slug) => {
     setActive(slug);
     setStarted(false);
+    setSeen((prev) => new Set(prev).add(slug));
   };
 
   if (!withVideo.length) return null;
@@ -48,6 +52,12 @@ export default function Walkthroughs({ builds }) {
           >
             <Icon name={b.icon} size={14} />
             {b.name}
+            {b.updated && !seen.has(b.slug) && (
+              <>
+                <span className={s.dot} aria-hidden="true" />
+                <span className="sr-only">has updates</span>
+              </>
+            )}
           </button>
         ))}
       </div>
@@ -94,8 +104,32 @@ export default function Walkthroughs({ builds }) {
         )}
       </div>
 
+      {current.updated && (
+        /* Carries its own weight rather than trailing off the date stamp — this
+           is the reason to go back to a build you have already watched. */
+        <p className={s.whatsNew} style={{ "--tint": current.tint }}>
+          <Icon name="sparkle" size={14} />
+          <span className="t-sm">
+            <strong>New {current.updated.on}</strong> — {current.updated.note}.
+          </span>
+        </p>
+      )}
+
       <div className={s.foot}>
-        <p className="t-sm t-secondary">{current.solution}</p>
+        <div className={s.blurb}>
+          <p className="t-sm t-secondary">{current.solution}</p>
+          {current.recorded && (
+            /* The clips are a dated record of the buildathon, not documentation
+               that tracks the live build. Saying so is what lets the apps keep
+               changing without the videos silently going stale. */
+            <p className={`t-xs t-secondary ${s.stamp}`}>
+              Recorded {current.recorded} at the DC DevFest buildathon
+              {current.updated
+                ? " — so this clip is from before the change above."
+                : " — the live build may have moved on since."}
+            </p>
+          )}
+        </div>
         <Link
           className="btn"
           href={`/${current.slug}`}
