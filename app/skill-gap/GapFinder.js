@@ -6,7 +6,9 @@ import Icon from "@/components/Icon";
 import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
 import { DOC_ACCEPT, readDocument } from "@/lib/files";
+import { fail, ok, requireKey, useWebMCPTools, withHandlers } from "@/lib/webmcp";
 import { SAMPLE_JOB, SAMPLE_RESUME } from "./samples";
+import { SKILLGAP_SAMPLES, SKILLGAP_TOOLS } from "./tools";
 import s from "./gap.module.css";
 
 const STAGES = [
@@ -86,10 +88,18 @@ export default function GapFinder() {
   }
   const done = Boolean(diff);
 
-  async function analyze() {
+  /**
+   * All three stages. Returns what they produced as well as setting state,
+   * so the WebMCP tool can hand the same result to an agent. `docs` lets a
+   * tool analyze text it just set, before React has re-rendered with it.
+   */
+  async function analyze(docs = {}) {
+    const posting = docs.job ?? job;
+    const cv = docs.resume ?? resume;
     if (!getKey("gemini")) {
-      setError("Add your Gemini key with the key button up top first.");
-      return;
+      const msg = "Add your Gemini key with the key button up top first.";
+      setError(msg);
+      return { error: msg };
     }
     setError("");
     setDiff(null);
@@ -98,8 +108,9 @@ export default function GapFinder() {
 
     try {
       setStage(0);
-      const extracted = await apiPost("/api/skill-gap", { stage: "extract", job, resume });
-      setRole(extracted.job?.role || "");
+      const extracted = await apiPost("/api/skill-gap", { stage: "extract", job: posting, resume: cv });
+      const detected = extracted.job?.role || "";
+      setRole(detected);
 
       setStage(1);
       const diffed = await apiPost("/api/skill-gap", { stage: "diff", ...extracted });
@@ -115,10 +126,12 @@ export default function GapFinder() {
 
       setStage(STAGES.length);
       trackRunFinished("skill-gap", "success");
+      return { role: detected, diff: diffed, plan: planned };
     } catch (e) {
       setError(e.message);
       setStage(-1);
       trackRunFinished("skill-gap", "error");
+      return { error: e.message };
     }
   }
 
@@ -135,6 +148,105 @@ export default function GapFinder() {
     if (rank[a.status] !== rank[b.status]) return rank[a.status] - rank[b.status];
     return a.importance === b.importance ? 0 : a.importance === "must" ? -1 : 1;
   });
+
+  // --- WebMCP ------------------------------------------------------------
+  // Tools fill the same boxes and run the same three requests the button
+  // does, so the stage list advances on screen while an agent waits.
+  const publicResult = (r, d, p) => ({
+    role: r || undefined,
+    fit: d.fit,
+    verdict: d.verdict,
+    requirements: (d.results || []).map((x) => ({
+      skill: x.skill,
+      importance: x.importance,
+      status: x.status,
+      why: x.why,
+      proof: x.proof || undefined,
+    })),
+    gaps: (d.results || []).filter((x) => x.status !== "have").map((x) => x.skill),
+    plan: p
+      ? {
+          focus: p.focus,
+          totalMinutes: (p.days || []).reduce((a, day) => a + (day.minutes || 0), 0),
+          days: (p.days || []).map((day) => ({
+            day: day.day,
+            skill: day.skill,
+            minutes: day.minutes,
+            task: day.task,
+            proof: day.proof,
+            resource: day.resource || undefined,
+            url: day.url || undefined,
+          })),
+        }
+      : null,
+    note: "Resources are model-suggested; check links before relying on them.",
+  });
+  const setInputs = ({ job: j, resume: r }) => {
+    if (typeof j === "string") setJob(j);
+    if (typeof r === "string") setResume(r);
+  };
+
+  useWebMCPTools(
+    withHandlers(SKILLGAP_TOOLS, {
+      skillgap_get_state: async () =>
+        ok({
+          jobChars: job.length,
+          resumeChars: resume.length,
+          stage: busy ? STAGES[stage].id : done ? "done" : "idle",
+          busy,
+          role: role || undefined,
+          fit: diff?.fit,
+          gapCount: diff ? gaps.length : null,
+          requirementCount: diff ? diff.results.length : null,
+          hasPlan: Boolean(plan),
+          error: error || undefined,
+        }),
+
+      skillgap_set_inputs: async ({ job: j, resume: r }) => {
+        if (busy) return fail("An analysis is in progress.", "Wait for skillgap_analyze to return first.");
+        if (typeof j !== "string" && typeof r !== "string") return fail("Pass job, resume or both.");
+        setInputs({ job: j, resume: r });
+        if (done) reset();
+        return ok({ jobChars: (j ?? job).length, resumeChars: (r ?? resume).length, next: "Call skillgap_analyze when both are loaded." });
+      },
+
+      skillgap_load_sample: async ({ name = SKILLGAP_SAMPLES[0] } = {}) => {
+        if (busy) return fail("An analysis is in progress.", "Wait for skillgap_analyze to return first.");
+        if (!SKILLGAP_SAMPLES.includes(name)) return fail(`No sample called "${name}".`, `Available: ${SKILLGAP_SAMPLES.join(", ")}.`);
+        setInputs({ job: SAMPLE_JOB, resume: SAMPLE_RESUME });
+        if (done) reset();
+        return ok({ loaded: name, jobChars: SAMPLE_JOB.length, resumeChars: SAMPLE_RESUME.length, next: "Call skillgap_analyze." });
+      },
+
+      skillgap_analyze: async () => {
+        if (busy) return fail("An analysis is already in progress.", "Wait for it to return, then call skillgap_get_result.");
+        if (!job.trim() || !resume.trim()) {
+          return fail("Both the posting and the resume are needed.", "Call skillgap_set_inputs with job and resume, or skillgap_load_sample.");
+        }
+        const missing = requireKey("gemini");
+        if (missing) return missing;
+        const res = await analyze();
+        if (res.error) return fail(res.error, "The same message is showing on the page. Fix the cause, then call again.");
+        return ok(publicResult(res.role, res.diff, res.plan));
+      },
+
+      skillgap_get_result: async () => {
+        if (!diff) {
+          return fail(
+            busy ? `Still running: ${STAGES[stage].label.toLowerCase()}.` : "No analysis yet.",
+            busy ? "Call again when skillgap_analyze returns." : "Call skillgap_analyze first."
+          );
+        }
+        return ok(publicResult(role, diff, plan));
+      },
+
+      skillgap_reset: async () => {
+        if (busy) return fail("An analysis is in progress.", "Wait for it to return first.");
+        reset();
+        return ok({ reset: true, note: "The posting and resume are still loaded." });
+      },
+    })
+  );
 
   return (
     <Shell>
