@@ -6,6 +6,16 @@ import Icon from "@/components/Icon";
 import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
 import { decideTable } from "@/lib/decide";
+import {
+  fail,
+  gate,
+  ok,
+  requireKey,
+  useDeclaredTools,
+  useWebMCPTools,
+  withHandlers,
+} from "@/lib/webmcp";
+import { THISORTHAT_FORMS, THISORTHAT_TOOLS } from "./tools";
 import s from "./swipe.module.css";
 
 /**
@@ -287,8 +297,8 @@ export default function Swiper() {
 
   /** Names are the vote keys, so a second "Sam" has to become "Sam 2". */
   function addMember(raw) {
-    const name = raw.trim();
-    if (!name || members.length >= 5) return;
+    const name = (raw || "").trim();
+    if (!name || members.length >= 5) return null;
     let unique = name;
     let n = 2;
     while (members.some((m) => m.name.toLowerCase() === unique.toLowerCase())) unique = `${name} ${n++}`;
@@ -298,6 +308,7 @@ export default function Swiper() {
     if (members.length + 1 > size) setSize(members.length + 1);
     setNewName("");
     setAdding(false);
+    return unique;
   }
 
   /** Fills the empty seats only — never overwrites a name somebody typed. */
@@ -333,36 +344,40 @@ export default function Swiper() {
     if (m === "near") requestLocation();
   }
 
-  async function start() {
+  async function start(over = {}) {
+    const ask = {
+      where: over.where ?? where,
+      mode: over.mode ?? mode,
+      craving: over.craving ?? craving,
+      members: over.names ?? names,
+    };
     if (!getKey("gemini")) {
-      setError("Add your Gemini key with the key button up top first.");
-      return;
+      const msg = "Add your Gemini key with the key button up top first.";
+      setError(msg);
+      return { error: msg };
     }
     setBusy(true);
     setDealLine(0);
     trackRunStarted("this-or-that");
     setError("");
     try {
-      const data = await apiPost("/api/this-or-that", {
-        stage: "deck",
-        where,
-        mode,
-        craving,
-        members: names,
-      });
+      const data = await apiPost("/api/this-or-that", { stage: "deck", ...ask });
       if (!data.places?.length) throw new Error("No places came back. Try a broader area.");
+      const dealtArea = data.area || ask.where;
       setPlaces(data.places);
-      setArea(data.area || where);
-      setVotes(Object.fromEntries(names.map((n) => [n, { yes: [], no: [] }])));
+      setArea(dealtArea);
+      setVotes(Object.fromEntries(ask.members.map((n) => [n, { yes: [], no: [] }])));
       setWho(0);
       setIdx(0);
       setPhotos({});
       setPhase("handoff");
-      loadPhotos(data.places, data.area || where);
+      loadPhotos(data.places, dealtArea);
       trackRunFinished("this-or-that", "success");
+      return { places: data.places, area: dealtArea };
     } catch (e) {
       setError(e.message);
       trackRunFinished("this-or-that", "error");
+      return { error: e.message };
     } finally {
       setBusy(false);
     }
@@ -423,7 +438,7 @@ export default function Swiper() {
   }
 
   function swipe(liked) {
-    if (leaving || !current) return;
+    if (leaving || !current) return null;
     setLeaving(liked ? "yes" : "no");
 
     // Built here rather than inside the updater so the last swipe can hand the
@@ -437,11 +452,13 @@ export default function Swiper() {
     };
     setVotes(next);
 
+    const lastCard = idx + 1 >= places.length;
+    const lastVoter = who + 1 >= members.length;
     setTimeout(() => {
       setLeaving(null);
-      if (idx + 1 < places.length) {
+      if (!lastCard) {
         setIdx(idx + 1);
-      } else if (who + 1 < members.length) {
+      } else if (!lastVoter) {
         setWho(who + 1);
         setIdx(0);
         setPhase("handoff");
@@ -449,6 +466,7 @@ export default function Swiper() {
         decide(next);
       }
     }, 260);
+    return { votes: next, lastCard, lastVoter };
   }
 
   /**
@@ -521,6 +539,180 @@ export default function Swiper() {
     setAdding(false);
     setCamFor(null);
   }
+
+  // --- WebMCP ------------------------------------------------------------
+  // Tools call the same functions the buttons do, so the phone shows exactly
+  // what the agent did: the deck deals, the cards fly, the tally counts.
+  const publicCard = (p) =>
+    p && {
+      name: p.name,
+      cuisine: p.cuisine,
+      neighborhood: p.neighborhood,
+      price: p.price,
+      vibe: p.vibe,
+      hook: p.hook,
+      dish: p.dish,
+      mapsUrl: mapsUrl(p, area),
+    };
+  const tallies = () => names.map((n) => ({ name: n, yes: votes[n]?.yes || [], no: votes[n]?.no || [] }));
+  const turn = () =>
+    member && places.length
+      ? {
+          voter: member.name,
+          voterNumber: who + 1,
+          ofVoters: members.length,
+          cardNumber: idx + 1,
+          ofCards: places.length,
+          cardsLeftForVoter: places.length - idx,
+        }
+      : null;
+  const snapshot = () => ({
+    phase: busy ? "dealing" : phase,
+    setup: {
+      step: STEPS[step],
+      where,
+      mode,
+      tags,
+      craving,
+      members: names,
+      partySize: size,
+    },
+    deck: places.length ? { area, count: places.length, places: places.map((p) => p.name) } : null,
+    turn: phase === "handoff" || phase === "swipe" ? turn() : null,
+    currentCard: phase === "swipe" ? publicCard(current) : null,
+    tallies: places.length ? tallies() : [],
+    result: decision
+      ? { winner: decision.winner, runnerUp: decision.runnerUp, unanimous: decision.unanimous, headline: decision.headline }
+      : null,
+    error: error || undefined,
+  });
+  const notYet = () =>
+    phase === "result"
+      ? null
+      : fail(
+          places.length ? `Still swiping: it is ${member?.name}'s turn with ${places.length - idx} cards left.` : "No deck yet.",
+          places.length ? "Call thisorthat_vote until the result comes back." : "Call thisorthat_setup first."
+        );
+
+  useWebMCPTools(
+    withHandlers(THISORTHAT_TOOLS, {
+      thisorthat_get_state: async () => ok(snapshot()),
+
+      thisorthat_setup: async ({ where: w, mode: m = "driving", tags: t = [], craving: c = "", members: ms = [] }) => {
+        if (phase !== "setup" || busy) {
+          return fail("A deck is already in play.", "Call thisorthat_reset (the user will confirm) before setting up again.");
+        }
+        const place = (w || "").trim();
+        if (!place) return fail("where is required.", "Pass a city, neighborhood or address.");
+        if (!DISTANCES.some((d) => d.id === m)) return fail(`Unknown mode "${m}".`, "Use walking or driving.");
+        const known = new Set(CRAVINGS.map((x) => x.id));
+        const badTags = (t || []).filter((id) => !known.has(id));
+        if (badTags.length) return fail(`Unknown tags: ${badTags.join(", ")}.`, `Use any of: ${[...known].join(", ")}.`);
+
+        // Same dedupe as addMember, applied to the whole list at once.
+        const people = [];
+        for (const raw of (ms || []).slice(0, 5)) {
+          const name = String(raw || "").trim().slice(0, 24);
+          if (!name) continue;
+          let unique = name;
+          let n = 2;
+          while (people.some((x) => x.toLowerCase() === unique.toLowerCase())) unique = `${name} ${n++}`;
+          people.push(unique);
+        }
+        if (people.length < 2) people.push(...randomNames(2 - people.length, people));
+        const custom = (c || "").trim();
+        const line = [...(t || []).map((id) => CRAVINGS.find((x) => x.id === id)?.phrase), custom]
+          .filter(Boolean)
+          .join("; ");
+
+        // Fill the wizard so the screen matches the answers, then deal.
+        setWhereMode("else");
+        setUsingGps(false);
+        setWhere(place);
+        setMode(m);
+        setTags(t || []);
+        setCustomOn(Boolean(custom));
+        setCustomCraving(custom);
+        setMembers(people.map((name) => ({ name, photo: null })));
+        setSize(people.length);
+        setStep(STEPS.length - 1);
+        const missing = requireKey("gemini");
+        if (missing) return missing;
+        const res = await start({ where: place, mode: m, craving: line, names: people });
+        if (res.error) return fail(res.error, "The same message is showing on the page. Fix the cause, then call again.");
+        return ok({
+          area: res.area,
+          members: people,
+          deck: res.places.map((p) => ({ name: p.name, cuisine: p.cuisine, price: p.price })),
+          next: `${people[0]} is up first. Call thisorthat_next_voter to start their turn.`,
+        });
+      },
+
+      thisorthat_next_voter: async () => {
+        if (phase !== "handoff") {
+          if (phase === "swipe") return fail(`${member?.name} is mid-turn with ${places.length - idx} cards left.`, "Call thisorthat_vote instead.");
+          return notYet() || fail("Everyone has voted.", "Call thisorthat_get_result.");
+        }
+        setPhase("swipe");
+        return ok({ voter: member.name, ...turn(), card: publicCard(places[idx]) });
+      },
+
+      thisorthat_vote: async ({ choice }) => {
+        if (choice !== "yes" && choice !== "no") return fail(`choice must be yes or no, not "${choice}".`);
+        if (phase === "handoff") setPhase("swipe");
+        else if (phase !== "swipe") return notYet() || fail("Everyone has voted.", "Call thisorthat_get_result.");
+        if (leaving) return fail("A card is still moving.", "Call again in a moment.");
+        const card = current;
+        const voter = member.name;
+        const outcome = swipe(choice === "yes");
+        if (!outcome) return fail("Nothing to swipe.", "Call thisorthat_get_state.");
+        // Let the card finish leaving so the next call is accepted.
+        await new Promise((r) => setTimeout(r, 320));
+        const base = { voter, card: card.name, choice };
+        if (!outcome.lastCard) return ok({ ...base, nextCard: publicCard(places[idx + 1]), cardsLeftForVoter: places.length - idx - 1 });
+        if (!outcome.lastVoter) {
+          return ok({ ...base, turnOver: true, next: `${members[who + 1].name} is up. Call thisorthat_next_voter.` });
+        }
+        const counted = decideTable({ places, members: names, votes: outcome.votes });
+        return ok({ ...base, done: true, winner: counted?.winner || null, next: "Call thisorthat_get_result for the full picture." });
+      },
+
+      thisorthat_get_result: async () => {
+        const wait = notYet();
+        if (wait) return wait;
+        if (!decision) return fail("No result to report.", "Call thisorthat_get_state.");
+        const win = places.find((p) => p.name === decision.winner);
+        return ok({
+          winner: win ? publicCard(win) : null,
+          runnerUp: decision.runnerUp,
+          unanimous: decision.unanimous,
+          headline: decision.headline,
+          why: decision.why,
+          tradeoff: decision.tradeoff || undefined,
+          ranking: (decision.ranked || []).map((r) => ({ name: r.place.name, yes: r.yes, no: r.no })),
+          tallies: tallies(),
+          counted: "The winner is a tally of the swipes, not a model's choice.",
+        });
+      },
+
+      thisorthat_reset: async (_input, { signal }) => {
+        if (places.length) {
+          const refused = await gate({
+            toolName: "thisorthat_reset",
+            title: "Throw away this deck?",
+            detail: `${places.length} places and every swipe so far are discarded.`,
+            signal,
+          });
+          if (refused) return refused;
+        }
+        reset();
+        return ok({ reset: true });
+      },
+    })
+  );
+
+  // The name form is a declarative tool while it is on screen.
+  useDeclaredTools(THISORTHAT_FORMS, phase === "setup" && step === 3 && adding);
 
   return (
     <Shell>
@@ -776,13 +968,27 @@ export default function Swiper() {
                     {adding && (
                       <form
                         className="row"
+                        toolname="thisorthat_add_member"
+                        tooldescription="Add one person to the table by name. Each named person swipes the deck in turn."
+                        toolautosubmit=""
                         onSubmit={(e) => {
                           e.preventDefault();
-                          addMember(newName);
+                          // Read the field itself: an agent fills the DOM
+                          // value, which React state has not seen yet.
+                          const typed = new FormData(e.currentTarget).get("name");
+                          const added = addMember(typeof typed === "string" ? typed : newName);
+                          const native = e.nativeEvent;
+                          if (native?.agentInvoked && typeof native.respondWith === "function") {
+                            native.respondWith(
+                              Promise.resolve(added ? { added, members: [...names, added] } : { error: "Nobody was added: empty name or the table is full at five." })
+                            );
+                          }
                         }}
                       >
                         <input
                           className="input"
+                          name="name"
+                          toolparamdescription="The person's first name, up to 24 characters."
                           value={newName}
                           autoFocus
                           maxLength={24}

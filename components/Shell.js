@@ -147,6 +147,7 @@ function ToolRow({ tool }) {
           <code className={styles.toolName}>{tool.name}</code>
           {a.readOnlyHint && <span className="badge">Read only</span>}
           {gated && <span className="badge badge-red">Asks you first</span>}
+          {tool.declarative && <span className="badge badge-blue">HTML form</span>}
           <span className={styles.toolChevron} aria-hidden="true">
             <Icon name="chevronDown" size={16} />
           </span>
@@ -176,7 +177,7 @@ function ToolRow({ tool }) {
 }
 
 const noopSubscribe = () => () => {};
-const SCOPE_TITLES = { site: "On every page", page: "On this page" };
+const SCOPE_TITLES = { site: "On every page", page: "On this page", form: "Forms on this page" };
 
 /**
  * What an agent could do here, shown to the human before any agent shows up.
