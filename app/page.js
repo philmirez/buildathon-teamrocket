@@ -163,8 +163,8 @@ export default function Home() {
                 <a href={WEBMCP_CHALLENGE} target="_blank" rel="noreferrer noopener">
                   OpenAI WebMCP Challenge
                 </a>{" "}
-                and could not help ourselves. Every build can now be driven by an AI agent
-                through <Link href="/webmcp">WebMCP</Link>.
+                and, being the AI obsessives we are, could not help ourselves. Every build can
+                now be driven by an AI agent through <Link href="/webmcp">WebMCP</Link>.
               </span>
             </li>
           </ul>
