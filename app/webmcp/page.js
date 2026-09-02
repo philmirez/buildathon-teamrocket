@@ -169,7 +169,7 @@ JSON.parse(await ctx.executeTool(t, "{}"));`}</pre>
         {CATALOG.map((g) => {
           const build = g.build ? bySlug(g.build) : null;
           return (
-            <section key={g.id} className={s.group}>
+            <section key={g.id} id={g.id} className={s.group}>
               <div className={s.groupHead}>
                 <h2 className="t-h2">{build ? build.name : g.title}</h2>
                 <span className="badge">{g.tools.length} tools</span>

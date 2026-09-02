@@ -24,7 +24,8 @@
   overflow-x: auto; white-space: pre;
 }
 
-.group { display: flex; flex-direction: column; gap: var(--s-3); }
+/* Anchored from the home page cards; clear the sticky header. */
+.group { display: flex; flex-direction: column; gap: var(--s-3); scroll-margin-top: 76px; }
 .groupHead {
   display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-3);
   padding-bottom: var(--s-3); border-bottom: 1px solid var(--border);
