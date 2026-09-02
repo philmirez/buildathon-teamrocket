@@ -5,6 +5,12 @@ links to all six.
 
 **Result:** 🥉 Third place, DC DevFest 2026 Buildathon.
 
+**Next:** Entered in the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge/).
+Every build can be driven by an AI agent through WebMCP; see the
+[WebMCP](#webmcp) section below and the live catalog at
+[teamrocket.website/webmcp](https://teamrocket.website/webmcp). Stay tuned for
+the results.
+
 **Live:** [teamrocket.website](https://teamrocket.website)
 
 **Repo:** [github.com/philmirez/buildathon-teamrocket](https://github.com/philmirez/buildathon-teamrocket)
