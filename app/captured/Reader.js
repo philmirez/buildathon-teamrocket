@@ -5,7 +5,9 @@ import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
+import { fail, gate, ok, requireKey, useWebMCPTools, withHandlers } from "@/lib/webmcp";
 import { SAMPLE_TEXT } from "./sample";
+import { CAPTURED_TOOLS } from "./tools";
 import s from "./reader.module.css";
 
 const AUTOPLAY_MS = 9000;
@@ -53,10 +55,12 @@ export default function Reader() {
     []
   );
 
-  async function begin() {
+  /** Split the text into scenes. Returns the book, or the error, for the tool. */
+  async function begin(source = text) {
     if (!getKey("gemini")) {
-      setError("Add your Gemini key with the key button up top first.");
-      return;
+      const msg = "Add your Gemini key with the key button up top first.";
+      setError(msg);
+      return { error: msg };
     }
     setBusy(true);
     trackRunStarted("captured");
@@ -64,7 +68,7 @@ export default function Reader() {
     setNotice("");
     setImages({});
     try {
-      const data = await apiPost("/api/captured", { stage: "scenes", text });
+      const data = await apiPost("/api/captured", { stage: "scenes", text: source });
       if (!data.scenes?.length) throw new Error("No visual scenes found in that text.");
       setBook(data);
       setIdx(0);
@@ -72,9 +76,11 @@ export default function Reader() {
       render(data.scenes[0], 0);
       if (data.scenes[1]) render(data.scenes[1], 1);
       trackRunFinished("captured", "success");
+      return { book: data };
     } catch (e) {
       setError(e.message);
       trackRunFinished("captured", "error");
+      return { error: e.message };
     } finally {
       setBusy(false);
     }
@@ -109,6 +115,111 @@ export default function Reader() {
   const scene = book?.scenes[idx];
   const shot = images[idx];
   const loading = pending[idx];
+
+  // --- WebMCP ------------------------------------------------------------
+  // Tools move the same index the arrows and ticks move, so the image stage
+  // follows the agent scene by scene.
+  const sceneAt = (i) => {
+    const sc = book?.scenes[i];
+    if (!sc) return null;
+    const img = images[i];
+    return {
+      index: i + 1,
+      of: book.scenes.length,
+      beat: sc.beat,
+      passage: sc.passage,
+      quote: sc.quote || undefined,
+      image: img?.image
+        ? { status: "ready", source: img.source, credit: img.credit || undefined }
+        : pending[i]
+          ? { status: "rendering" }
+          : { status: "none", reason: img?.degraded || "Not rendered yet." },
+    };
+  };
+  const noBook = () => fail("The scenes have not been found yet.", "Call captured_start once text is loaded.");
+
+  useWebMCPTools(
+    withHandlers(CAPTURED_TOOLS, {
+      captured_get_state: async () =>
+        ok({
+          textChars: text.length,
+          busy,
+          hasBook: Boolean(book),
+          title: book?.title,
+          sceneCount: book?.scenes.length ?? 0,
+          currentScene: book ? idx + 1 : null,
+          playing,
+          imagesReady: Object.values(images).filter((m) => m?.image).length,
+          notice: notice || undefined,
+          error: error || undefined,
+        }),
+
+      captured_load_text: async ({ text: t }) => {
+        const body = (t || "").trim();
+        if (body.length < 200) return fail("Need at least 200 characters.", "Pass a few paragraphs of the chapter or transcript.");
+        if (busy) return fail("Still finding the scenes.", "Wait for captured_start to return first.");
+        if (book) return fail("The reader is open.", "Call captured_new_text (the user will confirm) before loading new text.");
+        setText(body);
+        return ok({ textChars: body.length, next: "Call captured_start." });
+      },
+
+      captured_load_sample: async () => {
+        if (busy) return fail("Still finding the scenes.", "Wait for captured_start to return first.");
+        if (book) return fail("The reader is open.", "Call captured_new_text (the user will confirm) before loading new text.");
+        setText(SAMPLE_TEXT);
+        return ok({ textChars: SAMPLE_TEXT.length, next: "Call captured_start." });
+      },
+
+      captured_start: async () => {
+        if (busy) return fail("Already finding the scenes.", "Wait for this call to return.");
+        if (book) return ok({ alreadyOpen: true, title: book.title, sceneCount: book.scenes.length, currentScene: idx + 1 });
+        if (text.trim().length < 200) return fail("No text loaded.", "Call captured_load_text or captured_load_sample first.");
+        const missing = requireKey("gemini");
+        if (missing) return missing;
+        const res = await begin();
+        if (res.error) return fail(res.error, "The same message is showing on the page. Fix the cause, then call again.");
+        return ok({
+          title: res.book.title,
+          style: res.book.style,
+          scenes: res.book.scenes.map((sc, i) => ({ index: i + 1, beat: sc.beat })),
+          note: "Images render one scene ahead. Call captured_get_scene to see whether the current one is ready.",
+        });
+      },
+
+      captured_go_to_scene: async ({ index }) => {
+        if (!book) return noBook();
+        const n = Number(index);
+        if (!Number.isInteger(n) || n < 1 || n > book.scenes.length) {
+          return fail(`Scene ${index} does not exist.`, `Use 1 to ${book.scenes.length}.`);
+        }
+        setIdx(n - 1);
+        return ok(sceneAt(n - 1));
+      },
+
+      captured_get_scene: async () => (book ? ok(sceneAt(idx)) : noBook()),
+
+      captured_set_playing: async ({ playing: on }) => {
+        if (!book) return noBook();
+        setPlaying(Boolean(on));
+        return ok({ playing: Boolean(on), currentScene: idx + 1, of: book.scenes.length });
+      },
+
+      captured_new_text: async (_input, { signal }) => {
+        if (!book) return ok({ closed: true, note: "The reader was not open." });
+        const refused = await gate({
+          toolName: "captured_new_text",
+          title: `Close "${book.title}"?`,
+          detail: `${Object.values(images).filter((m) => m?.image).length} rendered images are dropped. The text stays in the box.`,
+          signal,
+        });
+        if (refused) return refused;
+        setBook(null);
+        setPlaying(false);
+        setNotice("");
+        return ok({ closed: true });
+      },
+    })
+  );
 
   return (
     <Shell>
