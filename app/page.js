@@ -4,7 +4,6 @@ import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import { BUILDS } from "@/lib/builds";
 import { TEAM, initials } from "@/lib/team";
-import Banner from "@/components/Banner";
 import Walkthroughs from "@/components/Walkthroughs";
 import styles from "./page.module.css";
 
@@ -45,21 +44,6 @@ export default function Home() {
 
   return (
     <Shell>
-      <Banner
-        href={DEVFEST}
-        icon="trophy"
-        cta="DevFest DC"
-        classNames={{
-          wrap: styles.bannerWrap,
-          banner: styles.banner,
-          icon: styles.bannerIcon,
-          text: styles.bannerText,
-          cta: styles.bannerCta,
-        }}
-      >
-        <strong>Third place</strong> at the DC DevFest 2026 Buildathon.
-      </Banner>
-
       <div className={styles.layout}>
       <aside className={styles.side}>
         <HeroSlideshow className={styles.sideArt} slides={HERO_SLIDES} />
@@ -133,6 +117,16 @@ export default function Home() {
           </p>
           <ul className={`t-body t-secondary ${styles.subList}`}>
             <li>
+              <Icon name="trophy" size={16} />
+              <span>
+                Third place at the{" "}
+                <a href={DEVFEST} target="_blank" rel="noreferrer noopener">
+                  DC DevFest 2026 Buildathon
+                </a>
+                .
+              </span>
+            </li>
+            <li>
               <Icon name="sparkle" size={16} />
               <span>
                 Written with{" "}
@@ -165,7 +159,7 @@ export default function Home() {
             <li>
               <Icon name="bot" size={16} />
               <span>
-                Drivable by an AI agent through WebMCP, our entry in the{" "}
+                AI agents can drive every build through WebMCP, so we entered the{" "}
                 <a href={WEBMCP_CHALLENGE} target="_blank" rel="noreferrer noopener">
                   OpenAI WebMCP Challenge
                 </a>
