@@ -50,6 +50,10 @@ function Thumbs({ shots, source, name }) {
     <>
       <div className={s.track} style={{ transform: `translateX(-${at * 100}%)` }}>
         {live.map((sh) => (
+          // Third-party photo URLs from Places and Pixabay: next/image would
+          // need every host allow-listed and would re-fetch them through the
+          // optimizer for no gain on a card that is already lazy.
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             key={sh.url}
             className={s.shot}

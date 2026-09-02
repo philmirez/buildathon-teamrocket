@@ -129,24 +129,50 @@ export default function Home() {
             one Team Rocket.
           </h1>
           <p className={`t-body t-secondary t-balance ${styles.sub}`}>
-            Watch any of them run, then try it yourself below. All six were written with{" "}
-            <a href={CLAUDE_CODE} target="_blank" rel="noreferrer noopener">
-              Claude Code
-            </a>
-            , run on{" "}
-            <a href={GEMINI} target="_blank" rel="noreferrer noopener">
-              Gemini
-            </a>{" "}
-            with your own key, and are hosted on{" "}
-            <a href={VERCEL} target="_blank" rel="noreferrer noopener">
-              Vercel
-            </a>
-            . Every build is also drivable by an AI agent through WebMCP, our entry in the{" "}
-            <a href={WEBMCP_CHALLENGE} target="_blank" rel="noreferrer noopener">
-              OpenAI WebMCP Challenge
-            </a>
-            .
+            Watch any of them run, then try it yourself below.
           </p>
+          <ul className={`t-body t-secondary ${styles.subList}`}>
+            <li>
+              <Icon name="sparkle" size={16} />
+              <span>
+                Written with{" "}
+                <a href={CLAUDE_CODE} target="_blank" rel="noreferrer noopener">
+                  Claude Code
+                </a>
+                .
+              </span>
+            </li>
+            <li>
+              <Icon name="key" size={16} />
+              <span>
+                Run on{" "}
+                <a href={GEMINI} target="_blank" rel="noreferrer noopener">
+                  Gemini
+                </a>{" "}
+                with your own key. Paste it once with the key button above.
+              </span>
+            </li>
+            <li>
+              <Icon name="globe" size={16} />
+              <span>
+                Hosted on{" "}
+                <a href={VERCEL} target="_blank" rel="noreferrer noopener">
+                  Vercel
+                </a>
+                .
+              </span>
+            </li>
+            <li>
+              <Icon name="bot" size={16} />
+              <span>
+                Drivable by an AI agent through WebMCP, our entry in the{" "}
+                <a href={WEBMCP_CHALLENGE} target="_blank" rel="noreferrer noopener">
+                  OpenAI WebMCP Challenge
+                </a>
+                .
+              </span>
+            </li>
+          </ul>
         </div>
 
         <Walkthroughs builds={BUILDS} />

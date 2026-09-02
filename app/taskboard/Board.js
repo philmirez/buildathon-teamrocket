@@ -6,6 +6,7 @@ import Icon from "@/components/Icon";
 import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
 import { fail, gate, ok, requireKey, useWebMCPTools, withHandlers } from "@/lib/webmcp";
+import { useMounted } from "@/lib/use-mounted";
 import { TASKBOARD_TOOLS } from "./tools";
 import s from "./board.module.css";
 
@@ -22,38 +23,40 @@ const uid = () => `t_${Date.now().toString(36)}${Math.random().toString(36).slic
 const stamp = () => Date.now();
 const daysIdle = (t) => Math.max(0, Math.floor((Date.now() - t.movedAt) / DAY));
 
+/** The saved board, or an empty one on the server and on corrupt state. */
+function loadBoard() {
+  if (typeof window === "undefined") return { tasks: [], goal: "" };
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (raw?.tasks) return { tasks: raw.tasks, goal: raw.goal || "" };
+  } catch {
+    /* corrupt state, start fresh */
+  }
+  return { tasks: [], goal: "" };
+}
+
 export default function Board() {
   const [goal, setGoal] = useState("");
   const [horizon, setHorizon] = useState("");
-  const [tasks, setTasks] = useState([]);
-  const [savedGoal, setSavedGoal] = useState("");
+  const [saved] = useState(loadBoard);
+  const [tasks, setTasks] = useState(saved.tasks);
+  const [savedGoal, setSavedGoal] = useState(saved.goal);
   const [busy, setBusy] = useState(false);
   const [triaging, setTriaging] = useState(false);
   const [triage, setTriage] = useState(null);
   const [error, setError] = useState("");
   const [dragId, setDragId] = useState(null);
   const [hoverStage, setHoverStage] = useState(null);
-  const [hydrated, setHydrated] = useState(false);
+  // The saved board is read in the initializer, but the server rendered the
+  // goal screen, so the board only shows once hydration is over.
+  const mounted = useMounted();
 
   // --- persistence -------------------------------------------------------
   useEffect(() => {
-    try {
-      const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-      if (raw?.tasks) {
-        setTasks(raw.tasks);
-        setSavedGoal(raw.goal || "");
-      }
-    } catch {
-      /* corrupt state — start fresh */
-    }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) {
+    if (mounted) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ goal: savedGoal, tasks }));
     }
-  }, [tasks, savedGoal, hydrated]);
+  }, [tasks, savedGoal, mounted]);
 
   // --- weighted progress -------------------------------------------------
   const totals = useMemo(() => {
@@ -170,7 +173,7 @@ export default function Board() {
     setError("");
   }
 
-  const hasBoard = tasks.length > 0;
+  const hasBoard = mounted && tasks.length > 0;
 
   // --- WebMCP ------------------------------------------------------------
   // Agents drive the same functions the buttons call, so the board on screen

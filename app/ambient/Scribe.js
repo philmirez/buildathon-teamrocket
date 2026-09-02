@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import Markdown from "@/components/Markdown";
@@ -16,12 +16,16 @@ import {
   saveWorkspace,
 } from "@/lib/ambient-store";
 import { fail, gate, ok, requireKey, useWebMCPTools, withHandlers } from "@/lib/webmcp";
+import { useMounted } from "@/lib/use-mounted";
 import { AMBIENT_TOOLS } from "./tools";
 import s from "./scribe.module.css";
 
 const SAMPLE = `Okay so two things from the standup. The roof guy came back with a quote, eighteen hundred for the flashing and the gutter section, he can start the ninth. I want to get a second quote before I say yes. Also Priya is out the week of the twelfth so we need to move the design review, probably to the fifteenth, and someone has to own the migration checklist while she's gone — I think that's Marcus. And remind me, I keep forgetting, the car registration expires end of next month.`;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const EMPTY_WS = emptyWorkspace();
+const noSubscribe = () => () => {};
+const speechAvailable = () => Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
 
 /** Wrap the vendor-prefixed Web Speech API. Returns null when unavailable. */
 function makeRecognizer() {
@@ -37,8 +41,11 @@ function makeRecognizer() {
 
 export default function Scribe() {
   const keys = useKeys();
-  const [ws, setWs] = useState(emptyWorkspace);
-  const [hydrated, setHydrated] = useState(false);
+  const [ws, setWs] = useState(loadWorkspace);
+  // The saved workspace is read in the initializer; the server rendered it
+  // empty, so the sidebar draws it only once hydration is over.
+  const mounted = useMounted();
+  const view = mounted ? ws : EMPTY_WS;
   const [selectedId, setSelectedId] = useState(null);
   const [mode, setMode] = useState("voice");
   const [listening, setListening] = useState(false);
@@ -48,7 +55,12 @@ export default function Scribe() {
   const [reply, setReply] = useState("");
   const [log, setLog] = useState([]);
   const [error, setError] = useState("");
+  // Flipped off when the microphone fails at runtime; support itself is read
+  // as an external value so the server can assume it and the client correct it.
   const [speechOK, setSpeechOK] = useState(true);
+  const speechSupported = useSyncExternalStore(noSubscribe, speechAvailable, () => true);
+  const canSpeak = speechOK && speechSupported;
+  const activeMode = canSpeak ? mode : "type";
 
   const recRef = useRef(null);
   const finalRef = useRef("");
@@ -64,17 +76,8 @@ export default function Scribe() {
 
   // --- persistence -------------------------------------------------------
   useEffect(() => {
-    setWs(loadWorkspace());
-    setHydrated(true);
-    if (!makeRecognizer()) {
-      setSpeechOK(false);
-      setMode("type");
-    }
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) saveWorkspace(ws);
-  }, [ws, hydrated]);
+    if (mounted) saveWorkspace(ws);
+  }, [ws, mounted]);
 
   const selected = useMemo(
     () => ws.notes.find((n) => n.id === selectedId) || null,
@@ -264,16 +267,16 @@ export default function Scribe() {
 
   // --- derived tree ------------------------------------------------------
   const tree = useMemo(() => {
-    const groups = ws.folders.map((f) => ({
+    const groups = view.folders.map((f) => ({
       folder: f,
-      notes: ws.notes.filter((n) => n.folderId === f.id),
+      notes: view.notes.filter((n) => n.folderId === f.id),
     }));
-    const loose = ws.notes.filter((n) => !n.folderId);
+    const loose = view.notes.filter((n) => !n.folderId);
     if (loose.length) groups.push({ folder: { id: "__loose", name: "Unfiled" }, notes: loose });
     return groups;
-  }, [ws]);
+  }, [view]);
 
-  const isEmpty = hydrated && !ws.notes.length;
+  const isEmpty = mounted && !ws.notes.length;
 
   const reset = () => {
     clearWorkspace();
@@ -380,9 +383,9 @@ export default function Scribe() {
         <aside className={s.sidebar}>
           <div className={s.sideHead}>
             <span className="badge badge-blue">
-              {ws.notes.length} note{ws.notes.length === 1 ? "" : "s"}
+              {view.notes.length} note{view.notes.length === 1 ? "" : "s"}
             </span>
-            {ws.notes.length > 0 && (
+            {view.notes.length > 0 && (
               <button className="btn btn-ghost btn-icon btn-sm" onClick={reset} aria-label="Clear workspace">
                 <Icon name="trash" size={16} />
               </button>
@@ -473,7 +476,7 @@ export default function Scribe() {
               </div>
             )}
 
-            {mode === "voice" ? (
+            {activeMode === "voice" ? (
               <div className={s.voice}>
                 {listening && (
                   /* Decorative — "Listening…" below already announces the state,
@@ -529,7 +532,7 @@ export default function Scribe() {
                   }}
                 />
                 <div className="spread">
-                  {speechOK ? (
+                  {canSpeak ? (
                     <button
                       className="btn btn-ghost btn-sm"
                       onClick={() => setMode("voice")}

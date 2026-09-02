@@ -70,6 +70,14 @@
 .heroText { display: flex; flex-direction: column; }
 .sub { max-width: 52ch; margin-top: var(--s-4); }
 
+.subList {
+  list-style: none; padding: 0;
+  margin-top: var(--s-4); max-width: 56ch;
+  display: flex; flex-direction: column; gap: var(--s-2);
+}
+.subList li { display: flex; align-items: flex-start; gap: var(--s-3); }
+.subList svg { flex: none; margin-top: 4px; color: var(--accent); }
+
 /* The art keeps its place in the rail now that the hero leads with a video. */
 .sideArt { margin-bottom: var(--s-5); }
 
