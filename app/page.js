@@ -2,7 +2,7 @@ import Link from "next/link";
 import HeroSlideshow from "@/components/HeroSlideshow";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
-import { BUILDS, byTier } from "@/lib/builds";
+import { BUILDS } from "@/lib/builds";
 import { TEAM, initials } from "@/lib/team";
 import Banner from "@/components/Banner";
 import Walkthroughs from "@/components/Walkthroughs";
@@ -37,9 +37,14 @@ const HERO_SLIDES = [
 const REPO = "https://github.com/philmirez/buildathon-teamrocket";
 const DEVFEST = "https://www.devfestdc.org/";
 const CLAUDE_CODE = "https://claude.com/product/claude-code";
+const WEBMCP_CHALLENGE = "https://openai.com/webmcp-challenge/";
+const VERCEL = "https://vercel.com";
+const GEMINI = "https://ai.google.dev/gemini-api";
 
 export default function Home() {
-  const tiers = byTier();
+  // Builds with a walkthrough live in the tabbed player above; the rest are
+  // listed below as work still underway, so nothing is hidden.
+  const pending = BUILDS.filter((b) => !b.video);
 
   return (
     <Shell>
@@ -131,25 +136,39 @@ export default function Home() {
             <a href={CLAUDE_CODE} target="_blank" rel="noreferrer noopener">
               Claude Code
             </a>
-            , and each works on your own Gemini key — paste it once with the key button
-            above.
+            , run on{" "}
+            <a href={GEMINI} target="_blank" rel="noreferrer noopener">
+              Gemini
+            </a>{" "}
+            with your own key, and are hosted on{" "}
+            <a href={VERCEL} target="_blank" rel="noreferrer noopener">
+              Vercel
+            </a>
+            . Every build is also drivable by an AI agent through WebMCP, our entry in the{" "}
+            <a href={WEBMCP_CHALLENGE} target="_blank" rel="noreferrer noopener">
+              OpenAI WebMCP Challenge
+            </a>
+            .
           </p>
         </div>
 
         <Walkthroughs builds={BUILDS} />
       </section>
 
-      {tiers.map((tier) => (
-        <section key={tier.id} className={styles.tier}>
+      {pending.length > 0 && (
+        <section className={styles.tier}>
           <header className={styles.tierHead}>
-            <h2 className="t-h3">{tier.name}</h2>
-            <span className={styles.tierCount}>{tier.builds.length}</span>
+            <h2 className="t-h3">Still in the workshop</h2>
+            <span className={styles.tierCount}>{pending.length}</span>
           </header>
 
-          {tier.note && <p className={`t-sm t-secondary ${styles.tierNote}`}>{tier.note}</p>}
+          <p className={`t-sm t-secondary ${styles.tierNote}`}>
+            No walkthrough yet, but the build runs and its agent tools are live. Image
+            generation is billing-gated, so it needs a paid Gemini key to run end to end.
+          </p>
 
           <div className={styles.grid}>
-            {tier.builds.map((b) => (
+            {pending.map((b) => (
               <Link
                 key={b.slug}
                 href={`/${b.slug}`}
@@ -163,17 +182,9 @@ export default function Home() {
                 <div className={styles.tileBody}>
                   <div className={styles.tileTitle}>
                     <h3 className="t-h3">{b.name}</h3>
-                    {b.updated && <span className="badge badge-red">Updated</span>}
+                    <span className="badge badge-yellow">In progress</span>
                   </div>
                   <p className="t-sm t-secondary">{b.solution}</p>
-                  {b.updated && (
-                    <p className={`t-xs ${styles.tileNew}`}>
-                      <Icon name="sparkle" size={13} />
-                      <span>
-                        New {b.updated.on} — {b.updated.note}.
-                      </span>
-                    </p>
-                  )}
                 </div>
 
                 <span className={styles.tileGo} aria-hidden="true">
@@ -183,7 +194,7 @@ export default function Home() {
             ))}
           </div>
         </section>
-      ))}
+      )}
 
       <footer className={styles.footer}>
         <div className={styles.footCol}>

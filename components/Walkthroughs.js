@@ -78,11 +78,11 @@ export default function Walkthroughs({ builds }) {
   return (
     <section className={s.wrap}>
       <header className={s.head}>
-        <h2 className="t-h3">Walkthroughs</h2>
+        <h2 className="t-h3">Builds</h2>
         <span className={s.count}>{withVideo.length}</span>
       </header>
 
-      <div className={s.tabs} role="tablist" aria-label="Build walkthroughs">
+      <div className={s.tabs} role="tablist" aria-label="Builds">
         {withVideo.map((b) => (
           <button
             key={b.slug}
@@ -105,9 +105,9 @@ export default function Walkthroughs({ builds }) {
 
       {/* The three things a visitor can do with the selected build, right
           under the tabs where the choice was made. */}
-      <div className={s.actions} style={{ "--tint": current.tint }}>
+      <div className={s.actions}>
         <Link
-          className={`${s.action} ${s.actionPrimary}`}
+          className={s.action}
           href={`/${current.slug}`}
           onClick={() => trackWalkthroughCta(current.slug)}
         >

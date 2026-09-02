@@ -52,18 +52,6 @@
 .actionTitle { font-size: .9375rem; font-weight: 600; letter-spacing: -.005em; }
 .actionSub { font-size: .75rem; line-height: 1.4; color: var(--text-secondary); }
 
-/* The primary action carries the build's colour so it reads first. */
-.actionPrimary {
-  border-color: color-mix(in srgb, var(--tint) 45%, var(--border));
-  background: color-mix(in srgb, var(--tint) 8%, var(--bg-raised));
-}
-.actionPrimary .actionIcon {
-  background: color-mix(in srgb, var(--tint) 16%, transparent);
-  color: var(--tint);
-}
-.actionPrimary:hover { border-color: var(--tint); }
-.actionPrimary:hover .actionIcon { transform: translateX(2px); color: var(--tint); }
-
 .stage { position: relative; }
 
 .player {
