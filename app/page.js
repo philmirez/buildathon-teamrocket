@@ -4,7 +4,7 @@ import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import { BUILDS, byTier } from "@/lib/builds";
 import { TEAM, initials } from "@/lib/team";
-import ReferralBanner from "@/components/ReferralBanner";
+import Banner from "@/components/Banner";
 import Walkthroughs from "@/components/Walkthroughs";
 import styles from "./page.module.css";
 
@@ -35,15 +35,18 @@ const HERO_SLIDES = [
 ];
 
 const REPO = "https://github.com/philmirez/buildathon-teamrocket";
-const CLAUDE_CODE = "https://claude.ai/referral/LXPYIRcZng";
+const DEVFEST = "https://www.devfestdc.org/";
+const CLAUDE_CODE = "https://claude.com/product/claude-code";
 
 export default function Home() {
   const tiers = byTier();
 
   return (
     <Shell>
-      <ReferralBanner
-        href={CLAUDE_CODE}
+      <Banner
+        href={DEVFEST}
+        icon="trophy"
+        cta="DevFest DC"
         classNames={{
           wrap: styles.bannerWrap,
           banner: styles.banner,
@@ -51,7 +54,9 @@ export default function Home() {
           text: styles.bannerText,
           cta: styles.bannerCta,
         }}
-      />
+      >
+        <strong>Third place</strong> at the DC DevFest 2026 Buildathon.
+      </Banner>
 
       <div className={styles.layout}>
       <aside className={styles.side}>
@@ -122,8 +127,12 @@ export default function Home() {
             one Team Rocket.
           </h1>
           <p className={`t-body t-secondary t-balance ${styles.sub}`}>
-            Watch any of them run, then try it yourself below. Each build works on your own
-            Gemini key — paste it once with the key button above.
+            Watch any of them run, then try it yourself below. All six were written with{" "}
+            <a href={CLAUDE_CODE} target="_blank" rel="noreferrer noopener">
+              Claude Code
+            </a>
+            , and each works on your own Gemini key — paste it once with the key button
+            above.
           </p>
         </div>
 
