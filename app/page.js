@@ -159,11 +159,12 @@ export default function Home() {
             <li>
               <Icon name="bot" size={16} />
               <span>
-                AI agents can drive every build through WebMCP, so we entered the{" "}
+                We heard about the{" "}
                 <a href={WEBMCP_CHALLENGE} target="_blank" rel="noreferrer noopener">
                   OpenAI WebMCP Challenge
-                </a>
-                .
+                </a>{" "}
+                and could not help ourselves. Every build can now be driven by an AI agent
+                through <Link href="/webmcp">WebMCP</Link>.
               </span>
             </li>
           </ul>
