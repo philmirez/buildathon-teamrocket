@@ -48,6 +48,11 @@
 }
 .action:hover .actionIcon { color: var(--text); }
 
+/* A status, not a control: no hover lift, no pointer. */
+.actionStatic { cursor: default; }
+.actionStatic:hover { border-color: var(--border); box-shadow: none; transform: none; }
+.actionStatic:hover .actionIcon { color: var(--text-secondary); }
+
 .actionText { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .actionTitle { font-size: .9375rem; font-weight: 600; letter-spacing: -.005em; }
 .actionSub { font-size: .75rem; line-height: 1.4; color: var(--text-secondary); }

@@ -42,9 +42,6 @@ const VERCEL = "https://vercel.com";
 const GEMINI = "https://ai.google.dev/gemini-api";
 
 export default function Home() {
-  // Builds with a walkthrough live in the tabbed player above; the rest are
-  // listed below as work still underway, so nothing is hidden.
-  const pending = BUILDS.filter((b) => !b.video);
 
   return (
     <Shell>
@@ -154,47 +151,6 @@ export default function Home() {
 
         <Walkthroughs builds={BUILDS} />
       </section>
-
-      {pending.length > 0 && (
-        <section className={styles.tier}>
-          <header className={styles.tierHead}>
-            <h2 className="t-h3">Still in the workshop</h2>
-            <span className={styles.tierCount}>{pending.length}</span>
-          </header>
-
-          <p className={`t-sm t-secondary ${styles.tierNote}`}>
-            No walkthrough yet, but the build runs and its agent tools are live. Image
-            generation is billing-gated, so it needs a paid Gemini key to run end to end.
-          </p>
-
-          <div className={styles.grid}>
-            {pending.map((b) => (
-              <Link
-                key={b.slug}
-                href={`/${b.slug}`}
-                className={`card card-hover ${styles.tile}`}
-                style={{ "--tint": b.tint }}
-              >
-                <span className={styles.tileIcon} aria-hidden="true">
-                  <Icon name={b.icon} size={22} />
-                </span>
-
-                <div className={styles.tileBody}>
-                  <div className={styles.tileTitle}>
-                    <h3 className="t-h3">{b.name}</h3>
-                    <span className="badge badge-yellow">In progress</span>
-                  </div>
-                  <p className="t-sm t-secondary">{b.solution}</p>
-                </div>
-
-                <span className={styles.tileGo} aria-hidden="true">
-                  <Icon name="arrowRight" size={18} />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
 
       <footer className={styles.footer}>
         <div className={styles.footCol}>
