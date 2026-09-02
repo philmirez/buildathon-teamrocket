@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Icon from "./Icon";
 import { KEY_SPECS, clearKeys, setKey, useKeys } from "@/lib/keys";
 import { BUILDS, bySlug } from "@/lib/builds";
@@ -130,40 +130,52 @@ function KeyVault({ onClose }) {
   );
 }
 
-/** One tool in the header's list: name, what it does, and its parameters. */
+/**
+ * One tool in the header's list. Collapsed to its name by default; the
+ * description and parameters open on demand so a page with a dozen tools
+ * still fits in one glance.
+ */
 function ToolRow({ tool }) {
   const props = tool.inputSchema?.properties || {};
   const required = new Set(tool.inputSchema?.required || []);
   const a = tool.annotations || {};
   const gated = a.destructiveHint || a.consequentialHint;
   return (
-    <li className={styles.tool}>
-      <div className={styles.toolHead}>
-        <code className={styles.toolName}>{tool.name}</code>
-        {a.readOnlyHint && <span className="badge">Read only</span>}
-        {gated && <span className="badge badge-red">Asks you first</span>}
-      </div>
-      <p className="t-sm t-secondary">{tool.description}</p>
-      {Object.keys(props).length > 0 && (
-        <ul className={styles.params}>
-          {Object.entries(props).map(([name, def]) => (
-            <li key={name} className={styles.param}>
-              <code className={styles.paramName}>
-                {name}
-                {required.has(name) ? "" : "?"}
-              </code>
-              <span className="t-xs t-secondary">
-                {def.enum ? def.enum.join(" | ") : def.type}
-                {def.description ? ` · ${def.description}` : ""}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+    <li>
+      <details className={styles.tool}>
+        <summary className={styles.toolHead}>
+          <code className={styles.toolName}>{tool.name}</code>
+          {a.readOnlyHint && <span className="badge">Read only</span>}
+          {gated && <span className="badge badge-red">Asks you first</span>}
+          <span className={styles.toolChevron} aria-hidden="true">
+            <Icon name="chevronDown" size={16} />
+          </span>
+        </summary>
+        <div className={styles.toolBody}>
+          <p className="t-sm t-secondary">{tool.description}</p>
+          {Object.keys(props).length > 0 && (
+            <ul className={styles.params}>
+              {Object.entries(props).map(([name, def]) => (
+                <li key={name} className={styles.param}>
+                  <code className={styles.paramName}>
+                    {name}
+                    {required.has(name) ? "" : "?"}
+                  </code>
+                  <span className="t-xs t-secondary">
+                    {def.enum ? def.enum.join(" | ") : def.type}
+                    {def.description ? ` · ${def.description}` : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </details>
     </li>
   );
 }
 
+const noopSubscribe = () => () => {};
 const SCOPE_TITLES = { site: "On every page", page: "On this page" };
 
 /**
@@ -173,8 +185,10 @@ const SCOPE_TITLES = { site: "On every page", page: "On this page" };
  */
 function ToolSheet({ onClose }) {
   const groups = useRegisteredTools();
-  const [supported, setSupported] = useState(null);
   const ref = useRef(null);
+  // Feature detection is client-only; reading it through an external store
+  // keeps the server render honest (null) without a setState in an effect.
+  const supported = useSyncExternalStore(noopSubscribe, hasWebMCP, () => null);
 
   useEffect(() => {
     const onKeyDown = (e) => e.key === "Escape" && onClose();
@@ -182,12 +196,6 @@ function ToolSheet({ onClose }) {
     ref.current?.querySelector("button")?.focus();
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
-
-  // Feature detection has to wait for the client; the sheet is only ever
-  // mounted there, but reading it in an effect keeps hydration honest.
-  useEffect(() => {
-    setSupported(hasWebMCP());
-  }, []);
 
   const count = groups.reduce((n, g) => n + g.tools.length, 0);
 

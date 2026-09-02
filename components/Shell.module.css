@@ -38,13 +38,26 @@
   color: var(--text-secondary);
   padding-bottom: var(--s-2); border-bottom: 1px solid var(--border);
 }
-.tools { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.tools { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
 .tool {
-  display: flex; flex-direction: column; gap: var(--s-2);
-  padding: var(--s-3) var(--s-4);
   background: var(--bg-sunken); border: 1px solid var(--border); border-radius: var(--r-md);
 }
-.toolHead { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2); }
+.toolHead {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  cursor: pointer; list-style: none;
+  transition: background var(--motion);
+}
+.toolHead::-webkit-details-marker { display: none; }
+.toolHead:hover { background: var(--bg-hover); border-radius: var(--r-md); }
+.toolChevron {
+  margin-left: auto; display: grid; place-items: center;
+  color: var(--text-secondary);
+  transition: transform var(--motion);
+}
+.tool[open] > .toolHead .toolChevron { transform: rotate(180deg); }
+.tool[open] > .toolHead { border-bottom: 1px solid var(--border); border-radius: var(--r-md) var(--r-md) 0 0; }
+.toolBody { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4); }
 .toolName { font-family: var(--mono); font-size: .8125rem; font-weight: 600; }
 .params { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--s-1); }
 .param { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-2); }
