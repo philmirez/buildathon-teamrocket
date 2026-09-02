@@ -27,6 +27,163 @@ links to all six.
 | Skill Gap | [`/skill-gap`](/skill-gap) | Diff a resume against a posting; get the gap and fourteen days. | Gemini |
 | Policy Diff | [`/policy-diff`](/policy-diff) | Diff two policy versions; plain-language changes ranked by who they hit. | Gemini |
 
+## WebMCP
+
+Every build on the site is drivable by an AI agent through
+[WebMCP](https://github.com/webmachinelearning/webmcp), the W3C proposal that
+puts a `modelContext` on the document. Each page registers tools with a name,
+a description, a JSON Schema and an `execute` function; an agent in a browser
+that supports WebMCP lists them, calls them, and watches the same screen the
+human does. The human UI stays the source of truth: every tool calls the same
+functions the buttons call, so whatever an agent changes is visible on screen.
+
+The live catalog, rendered from the same definitions the pages register, is at
+[`/webmcp`](https://teamrocket.website/webmcp). The WebMCP button in the
+header of every page lists the tools registered on that page.
+
+### What the site exposes
+
+- **Site-wide tools** on every page: discover the builds, navigate to one,
+  check which keys are set (booleans only), and open the key panel for the
+  human to type into.
+- **One tool group per build**, registered while that build's page is mounted
+  and unregistered when it unmounts. Definitions live in
+  `app/<build>/tools.js`; handlers live in each build's client component next
+  to the state they touch.
+- **One declarative tool**: the real name form on This or That's "Who's
+  eating" step carries `toolname`, `tooldescription`, `toolautosubmit` and a
+  `toolparamdescription`, so the browser synthesises `thisorthat_add_member`
+  from the markup and the submit handler answers agent-invoked submits with
+  `respondWith()`.
+- **An "Agent is driving" pill** in the header that names the tool while it
+  runs, driven by the `toolactivated` and `toolcancel` events.
+
+The bridge is `lib/webmcp.js`: `useWebMCPTools(tools, deps)` registers on
+mount and unregisters through an AbortSignal, `ok()` and `fail()` build the
+result shape with JSON payloads, `requireKey()` turns a missing key into a
+structured failure, and `gate()` blocks a destructive tool on the confirm bar.
+It checks `document.modelContext` (the current spec, Chrome 153+) and
+`navigator.modelContext` (Chrome 149 to 152) and degrades to a `console.debug`
+where neither exists.
+
+### Tool catalog
+
+Site-wide, on every page:
+
+| Tool | Does |
+|---|---|
+| `list_builds` | Every build with slug, name, problem, solution, tier and URL |
+| `open_build { slug }` | Client-side navigate to a build |
+| `get_setup_status` | `hasGeminiKey`, `hasPlacesKey`, `hasPixabayKey`, booleans only |
+| `open_key_panel` | Opens the key panel for the human to type into |
+
+Taskboard (`/taskboard`):
+
+| Tool | Does |
+|---|---|
+| `taskboard_get_state` | Goal, tasks with id, stage, weight, idle days and flags, progress percent |
+| `taskboard_set_goal { goal, horizon? }` | Fills the form and runs the planner to build the board |
+| `taskboard_add_task { title, detail?, stage?, weight? }` | Adds a card |
+| `taskboard_move_task { id, stage }` | Moves a card between columns |
+| `taskboard_remove_task { id }` | Deletes a card, after the human confirms |
+| `taskboard_triage` | Runs the triage agent and returns headline, focus and per-task flags |
+| `taskboard_age_board` | Demo control: rewinds idle clocks so triage has something to find |
+| `taskboard_reset` | Clears the board, after the human confirms |
+
+This or That (`/this-or-that`):
+
+| Tool | Does |
+|---|---|
+| `thisorthat_get_state` | Phase, setup answers, whose turn, current card, tallies, result |
+| `thisorthat_setup { where, mode?, tags?, craving?, members }` | Answers the wizard and deals the deck |
+| `thisorthat_next_voter` | Starts the current person's turn from the handoff screen |
+| `thisorthat_vote { choice }` | Swipes the card on screen; returns what comes next |
+| `thisorthat_get_result` | The counted pick with a Maps link, runner-up and full ranking |
+| `thisorthat_reset` | Discards the deck and votes, after the human confirms |
+| `thisorthat_add_member` (form) | The page's own name form, exposed declaratively |
+
+Policy Diff (`/policy-diff`):
+
+| Tool | Does |
+|---|---|
+| `policydiff_get_state` | Character counts, stage, stats, change count |
+| `policydiff_set_documents { oldText?, newText? }` | Pastes the two versions |
+| `policydiff_load_sample { name? }` | Loads the built-in terms-of-service pair |
+| `policydiff_run` | Deterministic diff, extract, explain; returns stats, changes and ranked verdicts |
+| `policydiff_get_result` | Re-reads the last result |
+| `policydiff_reset` | Back to the boxes, documents kept |
+
+Skill Gap (`/skill-gap`):
+
+| Tool | Does |
+|---|---|
+| `skillgap_get_state` | Character counts, stage, role, fit, gap count |
+| `skillgap_set_inputs { job?, resume? }` | Pastes the posting and resume |
+| `skillgap_load_sample { name? }` | Loads the built-in pair |
+| `skillgap_analyze` | Extract, judge, plan; returns role, fit, requirements, gaps and the 14-day plan |
+| `skillgap_get_result` | Re-reads the last result |
+| `skillgap_reset` | Back to the boxes, texts kept |
+
+Ambient Scribe (`/ambient`):
+
+| Tool | Does |
+|---|---|
+| `ambient_list_workspace` | Folders and notes with ids and titles |
+| `ambient_capture { text }` | Files a braindump the same way a spoken one is filed |
+| `ambient_get_note { id }` | Reads a note in full and brings it on screen |
+| `ambient_delete_note { id }` | Deletes a note, after the human confirms |
+| `ambient_clear_workspace` | Deletes everything, after the human confirms |
+
+Captured Memory (`/captured`):
+
+| Tool | Does |
+|---|---|
+| `captured_get_state` | Text length, title, scene count, current scene, autoplay, images ready |
+| `captured_load_text { text }` | Pastes a chapter or transcript |
+| `captured_load_sample` | Loads the built-in chapter |
+| `captured_start` | Finds the scenes and opens the reader |
+| `captured_go_to_scene { index }` | Jumps to a scene by 1-based number |
+| `captured_get_scene` | The scene on screen with its image status |
+| `captured_set_playing { playing }` | Autoplay on or off |
+| `captured_new_text` | Closes the reader, after the human confirms |
+
+### Trying it
+
+**Chrome 149 or newer.** Open `chrome://flags/#enable-webmcp-testing`, set it
+to Enabled, relaunch. Then, on any page of the site, from DevTools:
+
+```js
+const ctx = document.modelContext || navigator.modelContext;
+const tools = await ctx.getTools();
+const t = tools.find((x) => x.name === "list_builds");
+JSON.parse(await ctx.executeTool(t, "{}"));
+```
+
+Navigate to a build and `getTools()` again to see its group appear; the
+`toolchange` event fires on the ModelContext each time.
+
+**ChatGPT desktop browser.** WebMCP is built in. Open a build, then ask the
+assistant to do what the tool descriptions say, for example "build me a
+taskboard for shipping the onboarding flow in six weeks, age it, and tell me
+what is being neglected". The "Agent is driving" pill in the header names each
+tool as it runs, and the WebMCP button shows what is available before you ask.
+
+### Safety model
+
+- **Keys never cross the boundary.** No tool accepts, returns or sets a key.
+  `get_setup_status` returns booleans; `open_key_panel` opens the dialog for
+  the human to type into. A tool that needs a missing key returns a failure
+  telling the agent to ask the user to add it in the panel, never to send it.
+- **Destructive tools are gated.** Deleting a task or note, clearing a
+  workspace or board, and discarding a deck or reader all block on a confirm
+  bar at the bottom of the page. The call returns success only when the human
+  presses Confirm, and a structured failure on Cancel, timeout, or agent
+  abort. They also carry `destructiveHint` and `consequentialHint` annotations.
+- **The screen is the record.** Tools call the same state setters the UI uses,
+  so nothing happens off-screen, and the header pill names the running tool.
+- **Failures are answers.** Tools never throw. Every error is a structured
+  result with a `hint` for the next step.
+
 ## Keys
 
 **A Gemini key is required. All six builds need one and nothing runs without
