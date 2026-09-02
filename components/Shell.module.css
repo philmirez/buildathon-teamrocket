@@ -21,6 +21,38 @@
 
 .keyBtn { gap: var(--s-2); }
 
+/* ---- WebMCP button and tool sheet ---- */
+.toolsBtn { gap: var(--s-2); }
+.toolsCount {
+  display: grid; place-items: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--accent); color: #fff;
+  font-size: .6875rem; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+@media (max-width: 560px) { .toolsLabel { display: none; } }
+
+.toolSheet { max-width: 620px; }
+.toolGroup {
+  font-size: .6875rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text-secondary);
+  padding-bottom: var(--s-2); border-bottom: 1px solid var(--border);
+}
+.tools { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.tool {
+  display: flex; flex-direction: column; gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  background: var(--bg-sunken); border: 1px solid var(--border); border-radius: var(--r-md);
+}
+.toolHead { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2); }
+.toolName { font-family: var(--mono); font-size: .8125rem; font-weight: 600; }
+.params { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--s-1); }
+.param { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-2); }
+.paramName {
+  font-family: var(--mono); font-size: .75rem; color: var(--accent);
+  background: var(--accent-subtle); padding: 1px 6px; border-radius: var(--r-sm);
+}
+
 .dotOk, .dotOff { width: 7px; height: 7px; border-radius: 50%; }
 .dotOk { background: var(--green-3); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-3) 22%, transparent); }
 .dotOff { background: var(--n-4); }

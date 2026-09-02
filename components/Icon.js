@@ -17,6 +17,15 @@ const PATHS = {
     </>
   ),
   close: <path d="M6 6l12 12M18 6L6 18" />,
+  bot: (
+    <>
+      <rect x="4" y="8" width="16" height="12" rx="3" />
+      <path d="M12 4v4M9 4h6" />
+      <circle cx="9" cy="14" r="1.2" />
+      <circle cx="15" cy="14" r="1.2" />
+      <path d="M2 13v3M22 13v3" />
+    </>
+  ),
   mic: (
     <>
       <rect x="9" y="2.5" width="6" height="11" rx="3" />

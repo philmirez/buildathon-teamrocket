@@ -11,9 +11,11 @@ import { trackKeySaved } from "@/lib/analytics";
 import { SITE_TOOLS } from "@/lib/webmcp-catalog";
 import {
   fail,
+  hasWebMCP,
   ok,
   useAgentActivity,
   useConfirmation,
+  useRegisteredTools,
   useWebMCPTools,
   withHandlers,
 } from "@/lib/webmcp";
@@ -128,6 +130,118 @@ function KeyVault({ onClose }) {
   );
 }
 
+/** One tool in the header's list: name, what it does, and its parameters. */
+function ToolRow({ tool }) {
+  const props = tool.inputSchema?.properties || {};
+  const required = new Set(tool.inputSchema?.required || []);
+  const a = tool.annotations || {};
+  const gated = a.destructiveHint || a.consequentialHint;
+  return (
+    <li className={styles.tool}>
+      <div className={styles.toolHead}>
+        <code className={styles.toolName}>{tool.name}</code>
+        {a.readOnlyHint && <span className="badge">Read only</span>}
+        {gated && <span className="badge badge-red">Asks you first</span>}
+      </div>
+      <p className="t-sm t-secondary">{tool.description}</p>
+      {Object.keys(props).length > 0 && (
+        <ul className={styles.params}>
+          {Object.entries(props).map(([name, def]) => (
+            <li key={name} className={styles.param}>
+              <code className={styles.paramName}>
+                {name}
+                {required.has(name) ? "" : "?"}
+              </code>
+              <span className="t-xs t-secondary">
+                {def.enum ? def.enum.join(" | ") : def.type}
+                {def.description ? ` · ${def.description}` : ""}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+const SCOPE_TITLES = { site: "On every page", page: "On this page" };
+
+/**
+ * What an agent could do here, shown to the human before any agent shows up.
+ * Reads the same registrations the browser holds, so it can never list a tool
+ * that is not really there.
+ */
+function ToolSheet({ onClose }) {
+  const groups = useRegisteredTools();
+  const [supported, setSupported] = useState(null);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const onKeyDown = (e) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKeyDown);
+    ref.current?.querySelector("button")?.focus();
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  // Feature detection has to wait for the client; the sheet is only ever
+  // mounted there, but reading it in an effect keeps hydration honest.
+  useEffect(() => {
+    setSupported(hasWebMCP());
+  }, []);
+
+  const count = groups.reduce((n, g) => n + g.tools.length, 0);
+
+  return (
+    <div className={styles.scrim} onMouseDown={onClose}>
+      <div
+        className={`${styles.sheet} ${styles.toolSheet}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tools-title"
+        ref={ref}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="spread">
+          <h2 className="t-h2" id="tools-title">
+            Agent tools
+          </h2>
+          <button className="btn btn-ghost btn-icon btn-sm" onClick={onClose} aria-label="Close">
+            <Icon name="close" />
+          </button>
+        </div>
+
+        <p className="t-sm t-secondary">
+          This page registers {count} WebMCP {count === 1 ? "tool" : "tools"}. An AI agent in a
+          browser that speaks WebMCP can call them. Everything it does shows up on screen, keys
+          stay yours to type, and anything destructive waits for your Confirm.
+        </p>
+
+        {supported !== null && (
+          <div className={`notice ${supported ? "notice-ok" : "notice-info"}`}>
+            <Icon name={supported ? "check" : "warning"} size={16} />
+            <span>
+              {supported
+                ? "WebMCP is on in this browser. Agents can already see these tools."
+                : "This browser is not exposing WebMCP. Chrome 149+ has it behind chrome://flags/#enable-webmcp-testing; the ChatGPT desktop browser has it built in."}
+            </span>
+          </div>
+        )}
+
+        {groups.map((g, i) => (
+          <section key={`${g.scope}-${i}`} className="stack" style={{ "--gap": "var(--s-3)" }}>
+            <h3 className={styles.toolGroup}>{SCOPE_TITLES[g.scope] || g.scope}</h3>
+            <ul className={styles.tools}>
+              {g.tools.map((t) => (
+                <ToolRow key={t.name} tool={t} />
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Lights up while an agent is inside a tool call, naming the tool, and fades
  * once the call returns. Always mounted so the fade can run; hidden from
@@ -195,8 +309,11 @@ function ConfirmBar({ pending }) {
 export default function Shell({ children, accent }) {
   const keys = useKeys();
   const [open, setOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const ready = Boolean(keys.gemini);
   const router = useRouter();
+  const registered = useRegisteredTools();
+  const toolCount = registered.reduce((n, g) => n + g.tools.length, 0);
   const agent = useAgentActivity();
   const pending = useConfirmation();
 
@@ -240,7 +357,9 @@ export default function Shell({ children, accent }) {
         setOpen(true);
         return ok({ opened: true, note: "The key panel is open. Ask the user to paste the key there, not in chat." });
       },
-    })
+    }),
+    [],
+    "site"
   );
 
   return (
@@ -266,6 +385,17 @@ export default function Shell({ children, accent }) {
           <AgentPill active={agent.active} toolName={agent.toolName} />
 
           <button
+            className={`btn btn-tertiary btn-sm ${styles.toolsBtn}`}
+            onClick={() => setToolsOpen(true)}
+            aria-label={`WebMCP: ${toolCount} agent tools on this page`}
+            title="What an AI agent can do on this page"
+          >
+            <Icon name="bot" size={16} />
+            <span className={styles.toolsLabel}>WebMCP</span>
+            {toolCount > 0 && <span className={styles.toolsCount}>{toolCount}</span>}
+          </button>
+
+          <button
             className={`btn btn-tertiary btn-sm ${styles.keyBtn}`}
             onClick={() => setOpen(true)}
             aria-label={ready ? "API keys — Gemini key set" : "API keys — none set"}
@@ -279,6 +409,7 @@ export default function Shell({ children, accent }) {
       <main className={styles.main}>{children}</main>
 
       {open && <KeyVault onClose={() => setOpen(false)} />}
+      {toolsOpen && <ToolSheet onClose={() => setToolsOpen(false)} />}
       {pending && <ConfirmBar pending={pending} />}
     </div>
   );
