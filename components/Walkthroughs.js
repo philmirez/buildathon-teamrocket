@@ -31,6 +31,9 @@ export default function Walkthroughs({ builds }) {
   // build's tool list instead.
   const [clip, setClip] = useState("human");
   const videoRef = useRef(null);
+  // Set by a card that also swaps the clip: the new <video> starts itself as
+  // soon as it mounts, inside the same user gesture, without a frame timer.
+  const wantPlay = useRef(false);
 
   const select = (slug) => {
     setActive(slug);
@@ -39,13 +42,32 @@ export default function Walkthroughs({ builds }) {
     setSeen((prev) => new Set(prev).add(slug));
   };
 
-  /** Start playback from a card, revealing the native controls either way. */
-  const play = () => {
-    const el = videoRef.current;
+  /** Start playback, revealing the native controls either way. */
+  const play = (el = videoRef.current) => {
     if (!el) return;
     const p = el.play();
     if (p?.catch) p.then(() => setStarted(true)).catch(() => setStarted(true));
     else setStarted(true);
+  };
+
+  const setVideo = (el) => {
+    videoRef.current = el;
+    if (el && wantPlay.current) {
+      wantPlay.current = false;
+      play(el);
+    }
+  };
+
+  /** Show `which` clip and play it, whether or not that means a new element. */
+  const watch = (which) => {
+    videoRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (which === clip) {
+      play();
+      return;
+    }
+    wantPlay.current = true;
+    setStarted(false);
+    setClip(which);
   };
 
   if (!withVideo.length) return null;
@@ -101,12 +123,7 @@ export default function Walkthroughs({ builds }) {
         <button
           type="button"
           className={s.action}
-          onClick={() => {
-            setClip("human");
-            videoRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-            // The remount from a clip change needs a frame before play() lands.
-            requestAnimationFrame(play);
-          }}
+          onClick={() => watch("human")}
         >
           <span className={s.actionIcon} aria-hidden="true">
             <Icon name="play" size={18} />
@@ -123,12 +140,7 @@ export default function Walkthroughs({ builds }) {
           <button
             type="button"
             className={s.action}
-            onClick={() => {
-              setClip("agent");
-              setStarted(false);
-              videoRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-              requestAnimationFrame(play);
-            }}
+            onClick={() => watch("agent")}
           >
             <span className={s.actionIcon} aria-hidden="true">
               <Icon name="bot" size={18} />
@@ -156,7 +168,7 @@ export default function Walkthroughs({ builds }) {
       <div className={s.stage}>
         <video
           key={`${current.slug}-${clip}`}
-          ref={videoRef}
+          ref={setVideo}
           className={s.player}
           controls
           /* iOS will not start a JS-initiated play() on an element with no
@@ -177,7 +189,7 @@ export default function Walkthroughs({ builds }) {
           <button
             type="button"
             className={s.overlay}
-            onClick={play}
+            onClick={() => play()}
             aria-label={`Play the ${current.name} walkthrough`}
           >
             <span className={s.play} aria-hidden="true">
