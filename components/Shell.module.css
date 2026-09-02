@@ -53,3 +53,54 @@
 
 @keyframes fade { from { opacity: 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+
+/* ---- agent activity ---- */
+.agent {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  height: 30px; padding: 0 var(--s-3) 0 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: var(--accent-subtle); color: var(--text);
+  font-size: .8125rem; font-weight: 500; white-space: nowrap;
+  opacity: 0; transform: translateY(-4px); pointer-events: none;
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+.agent[data-on] { opacity: 1; transform: none; transition-duration: 160ms; }
+
+.agentDot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.agent:not([data-on]) .agentDot { animation: none; }
+
+.agentTool { font-family: var(--mono); font-size: .75rem; color: var(--accent); }
+
+@keyframes pulse { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent); } }
+
+@media (max-width: 560px) { .agentLabel { display: none; } }
+
+/* ---- confirm bar for destructive tool calls ---- */
+.confirm {
+  position: fixed; left: var(--s-5); right: var(--s-5); bottom: var(--s-5); z-index: 90;
+  max-width: 640px; margin-inline: auto;
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--bg-raised);
+  border: 1px solid color-mix(in srgb, var(--red-3) 40%, var(--border));
+  border-radius: var(--r-lg);
+  box-shadow: var(--e-4);
+  animation: rise 200ms cubic-bezier(.2,0,.2,1);
+}
+
+.confirmIcon {
+  display: grid; place-items: center; flex: none;
+  width: 34px; height: 34px; border-radius: var(--r-md);
+  background: var(--red-1); color: var(--red-3);
+}
+
+.confirmText { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+@media (max-width: 560px) {
+  .confirm { flex-wrap: wrap; }
+  .confirmText { flex-basis: 100%; }
+}
