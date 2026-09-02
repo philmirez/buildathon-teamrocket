@@ -236,6 +236,14 @@ function ToolSheet({ onClose }) {
           </div>
         )}
 
+        <p className="t-xs t-secondary">
+          The full catalog for every build, with schemas, is at{" "}
+          <Link href="/webmcp" onClick={onClose}>
+            /webmcp
+          </Link>
+          .
+        </p>
+
         {groups.map((g, i) => (
           <section key={`${g.scope}-${i}`} className="stack" style={{ "--gap": "var(--s-3)" }}>
             <h3 className={styles.toolGroup}>{SCOPE_TITLES[g.scope] || g.scope}</h3>

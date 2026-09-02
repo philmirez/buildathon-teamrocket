@@ -191,7 +191,10 @@ export default function Home() {
             <Icon name="github" size={16} />
             philmirez/buildathon-teamrocket
           </a>
-          <p className="t-xs t-secondary">Keys stay in your browser.</p>
+          <p className="t-xs t-secondary">
+            Keys stay in your browser. Every build is drivable by an agent through{" "}
+            <Link href="/webmcp">WebMCP</Link>.
+          </p>
         </div>
 
       </footer>
