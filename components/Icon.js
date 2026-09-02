@@ -17,6 +17,15 @@ const PATHS = {
     </>
   ),
   close: <path d="M6 6l12 12M18 6L6 18" />,
+  bot: (
+    <>
+      <rect x="4" y="8" width="16" height="12" rx="3" />
+      <path d="M12 4v4M9 4h6" />
+      <circle cx="9" cy="14" r="1.2" />
+      <circle cx="15" cy="14" r="1.2" />
+      <path d="M2 13v3M22 13v3" />
+    </>
+  ),
   mic: (
     <>
       <rect x="9" y="2.5" width="6" height="11" rx="3" />
@@ -28,6 +37,14 @@ const PATHS = {
       <rect x="3" y="4" width="18" height="16" rx="2.5" />
       <circle cx="8.5" cy="9.5" r="1.6" />
       <path d="M3.5 17l4.6-4.2a2 2 0 0 1 2.7 0L16 17.5m1.6-2.2a1.8 1.8 0 0 1 2.5 0l1.4 1.3" />
+    </>
+  ),
+  trophy: (
+    <>
+      <path d="M7 4h10v4.6a5 5 0 0 1-10 0Z" />
+      <path d="M7 5.6H4.6v1.1A3.3 3.3 0 0 0 7.5 10" />
+      <path d="M17 5.6h2.4v1.1A3.3 3.3 0 0 1 16.5 10" />
+      <path d="M12 13.6V17M10.4 17h3.2v3.4h-3.2ZM8.4 20.4h7.2" />
     </>
   ),
   camera: (

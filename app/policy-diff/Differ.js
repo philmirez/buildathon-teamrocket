@@ -7,7 +7,9 @@ import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
 import { DOC_ACCEPT, readDocument } from "@/lib/files";
 import { wordDiff } from "@/lib/textdiff";
+import { fail, ok, requireKey, useWebMCPTools, withHandlers } from "@/lib/webmcp";
 import { SAMPLE_NEW, SAMPLE_OLD } from "./samples";
+import { POLICYDIFF_SAMPLES, POLICYDIFF_TOOLS } from "./tools";
 import s from "./differ.module.css";
 
 const STAGES = [
@@ -158,10 +160,18 @@ export default function Differ() {
     }
   }
 
-  async function run() {
+  /**
+   * The whole pipeline. Returns what it produced as well as setting state, so
+   * the WebMCP tool can hand the same result to an agent. `docs` lets a tool
+   * run on text it just set, before React has re-rendered with it.
+   */
+  async function run(docs = {}) {
+    const a = docs.oldText ?? oldText;
+    const b = docs.newText ?? newText;
     if (!getKey("gemini")) {
-      setError("Add your Gemini key with the key button up top first.");
-      return;
+      const msg = "Add your Gemini key with the key button up top first.";
+      setError(msg);
+      return { error: msg };
     }
     setError("");
     setStats(null);
@@ -172,17 +182,19 @@ export default function Differ() {
     try {
       // Stage 0 is local and instant — the real diff lands before any model runs.
       setStage(0);
-      const d = await apiPost("/api/policy-diff", { stage: "diff", oldText, newText });
+      const d = await apiPost("/api/policy-diff", { stage: "diff", oldText: a, newText: b });
       if (d.identical) {
-        setError("These two versions are identical.");
+        const msg = "These two versions are identical.";
+        setError(msg);
         setStage(-1);
-        return;
+        return { error: msg };
       }
       setStats(d.stats);
 
       setStage(1);
       const e = await apiPost("/api/policy-diff", { stage: "extract", hunks: d.hunks });
-      setChanges(e.changes || []);
+      const found = e.changes || [];
+      setChanges(found);
 
       setStage(2);
       const x = await apiPost("/api/policy-diff", {
@@ -193,10 +205,12 @@ export default function Differ() {
       setResult(x);
       setStage(STAGES.length);
       trackRunFinished("policy-diff", "success");
+      return { stats: d.stats, changes: found, result: x };
     } catch (err) {
       setError(err.message);
       setStage(-1);
       trackRunFinished("policy-diff", "error");
+      return { error: err.message };
     }
   }
 
@@ -211,6 +225,97 @@ export default function Differ() {
   const ranked = result?.ranked || [];
   const top3 = ranked.slice(0, 3);
   const rest = ranked.slice(3);
+
+  // --- WebMCP ------------------------------------------------------------
+  // Tools fill the same boxes and run the same pipeline the buttons do, so
+  // the stage list on screen advances while an agent waits on policydiff_run.
+  const publicResult = (st, ch, res) => ({
+    stats: st,
+    headline: res.headline,
+    direction: res.direction,
+    directionMeaning: DIRECTION[res.direction] || DIRECTION.neutral,
+    ranked: (res.ranked || []).map((v, i) => ({
+      rank: i + 1,
+      id: v.id,
+      title: ch?.[v.id]?.title || "Change",
+      severity: v.severity,
+      direction: v.direction,
+      plain: v.plain,
+      meaning: v.meaning,
+      affected: v.affected || [],
+      action: v.action || undefined,
+      before: ch?.[v.id]?.before ?? "",
+      after: ch?.[v.id]?.after ?? "",
+    })),
+  });
+  const setDocs = ({ oldText: a, newText: b }) => {
+    if (typeof a === "string") setOldText(a);
+    if (typeof b === "string") setNewText(b);
+  };
+
+  useWebMCPTools(
+    withHandlers(POLICYDIFF_TOOLS, {
+      policydiff_get_state: async () =>
+        ok({
+          oldChars: oldText.length,
+          newChars: newText.length,
+          stage: busy ? STAGES[stage].id : started && result ? "done" : "idle",
+          busy,
+          stats,
+          changeCount: changes ? changes.length : null,
+          hasResult: Boolean(result),
+          error: error || undefined,
+        }),
+
+      policydiff_set_documents: async ({ oldText: a, newText: b }) => {
+        if (busy) return fail("A run is in progress.", "Wait for policydiff_run to return, then set the documents.");
+        if (typeof a !== "string" && typeof b !== "string") return fail("Pass oldText, newText or both.");
+        setDocs({ oldText: a, newText: b });
+        if (started) reset();
+        return ok({
+          oldChars: (a ?? oldText).length,
+          newChars: (b ?? newText).length,
+          next: "Call policydiff_run when both versions are loaded.",
+        });
+      },
+
+      policydiff_load_sample: async ({ name = POLICYDIFF_SAMPLES[0] } = {}) => {
+        if (busy) return fail("A run is in progress.", "Wait for policydiff_run to return first.");
+        if (!POLICYDIFF_SAMPLES.includes(name)) return fail(`No sample called "${name}".`, `Available: ${POLICYDIFF_SAMPLES.join(", ")}.`);
+        setDocs({ oldText: SAMPLE_OLD, newText: SAMPLE_NEW });
+        if (started) reset();
+        return ok({ loaded: name, oldChars: SAMPLE_OLD.length, newChars: SAMPLE_NEW.length, next: "Call policydiff_run." });
+      },
+
+      policydiff_run: async () => {
+        if (busy) return fail("A run is already in progress.", "Wait for it to return, then call policydiff_get_result.");
+        if (!oldText.trim() || !newText.trim()) {
+          return fail("Both versions are needed.", "Call policydiff_set_documents with oldText and newText, or policydiff_load_sample.");
+        }
+        const missing = requireKey("gemini");
+        if (missing) return missing;
+        const res = await run();
+        if (res.error) return fail(res.error, "The same message is showing on the page. Fix the cause, then call again.");
+        return ok(publicResult(res.stats, res.changes, res.result));
+      },
+
+      policydiff_get_result: async () => {
+        if (!result) {
+          return fail(
+            busy ? `Still running: ${STAGES[stage].label.toLowerCase()}.` : "No result yet.",
+            busy ? "Call again when policydiff_run returns." : "Call policydiff_run first."
+          );
+        }
+        return ok(publicResult(stats, changes, result));
+      },
+
+      policydiff_reset: async () => {
+        if (busy) return fail("A run is in progress.", "Wait for it to return first.");
+        reset();
+        return ok({ reset: true, note: "Both documents are still loaded." });
+      },
+    })
+  );
 
   return (
     <Shell>

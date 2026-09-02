@@ -5,6 +5,9 @@ import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, getKey } from "@/lib/keys";
+import { fail, gate, ok, requireKey, useWebMCPTools, withHandlers } from "@/lib/webmcp";
+import { useMounted } from "@/lib/use-mounted";
+import { TASKBOARD_TOOLS } from "./tools";
 import s from "./board.module.css";
 
 const STORAGE_KEY = "broccoli.taskboard.v1";
@@ -16,40 +19,44 @@ const STAGES = [
 const DAY = 86400000;
 
 const uid = () => `t_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+// Wrapped so closures handed to the WebMCP hook read as pure to the compiler lint.
+const stamp = () => Date.now();
 const daysIdle = (t) => Math.max(0, Math.floor((Date.now() - t.movedAt) / DAY));
+
+/** The saved board, or an empty one on the server and on corrupt state. */
+function loadBoard() {
+  if (typeof window === "undefined") return { tasks: [], goal: "" };
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (raw?.tasks) return { tasks: raw.tasks, goal: raw.goal || "" };
+  } catch {
+    /* corrupt state, start fresh */
+  }
+  return { tasks: [], goal: "" };
+}
 
 export default function Board() {
   const [goal, setGoal] = useState("");
   const [horizon, setHorizon] = useState("");
-  const [tasks, setTasks] = useState([]);
-  const [savedGoal, setSavedGoal] = useState("");
+  const [saved] = useState(loadBoard);
+  const [tasks, setTasks] = useState(saved.tasks);
+  const [savedGoal, setSavedGoal] = useState(saved.goal);
   const [busy, setBusy] = useState(false);
   const [triaging, setTriaging] = useState(false);
   const [triage, setTriage] = useState(null);
   const [error, setError] = useState("");
   const [dragId, setDragId] = useState(null);
   const [hoverStage, setHoverStage] = useState(null);
-  const [hydrated, setHydrated] = useState(false);
+  // The saved board is read in the initializer, but the server rendered the
+  // goal screen, so the board only shows once hydration is over.
+  const mounted = useMounted();
 
   // --- persistence -------------------------------------------------------
   useEffect(() => {
-    try {
-      const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-      if (raw?.tasks) {
-        setTasks(raw.tasks);
-        setSavedGoal(raw.goal || "");
-      }
-    } catch {
-      /* corrupt state — start fresh */
-    }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) {
+    if (mounted) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ goal: savedGoal, tasks }));
     }
-  }, [tasks, savedGoal, hydrated]);
+  }, [tasks, savedGoal, mounted]);
 
   // --- weighted progress -------------------------------------------------
   const totals = useMemo(() => {
@@ -66,33 +73,42 @@ export default function Board() {
   const flagFor = (id) => triage?.flags?.find((f) => f.id === id);
 
   // --- actions -----------------------------------------------------------
-  async function plan() {
+  // Both agent calls return what they did as well as setting state, so the
+  // WebMCP tools below can hand the same result back to whoever called them.
+  const NO_KEY = "Add your Gemini key with the key button up top first.";
+
+  async function plan(nextGoal = goal, nextHorizon = horizon) {
     if (!getKey("gemini")) {
-      setError("Add your Gemini key with the key button up top first.");
-      return;
+      setError(NO_KEY);
+      return { error: NO_KEY };
     }
     setBusy(true);
     trackRunStarted("taskboard");
     setError("");
     setTriage(null);
     try {
-      const data = await apiPost("/api/taskboard", { stage: "plan", goal, horizon });
-      const now = Date.now();
-      setSavedGoal(data.goal || goal);
-      setTasks(
-        (data.tasks || []).map((t) => ({
-          id: uid(),
-          title: t.title,
-          detail: t.detail,
-          weight: t.weight,
-          stage: "todo",
-          movedAt: now,
-        }))
-      );
+      const data = await apiPost("/api/taskboard", {
+        stage: "plan",
+        goal: nextGoal,
+        horizon: nextHorizon,
+      });
+      const now = stamp();
+      const made = (data.tasks || []).map((t) => ({
+        id: uid(),
+        title: t.title,
+        detail: t.detail,
+        weight: t.weight,
+        stage: "todo",
+        movedAt: now,
+      }));
+      setSavedGoal(data.goal || nextGoal);
+      setTasks(made);
       trackRunFinished("taskboard", "success");
+      return { goal: data.goal || nextGoal, tasks: made };
     } catch (e) {
       setError(e.message);
       trackRunFinished("taskboard", "error");
+      return { error: e.message };
     } finally {
       setBusy(false);
     }
@@ -100,8 +116,8 @@ export default function Board() {
 
   async function runTriage() {
     if (!getKey("gemini")) {
-      setError("Add your Gemini key with the key button up top first.");
-      return;
+      setError(NO_KEY);
+      return { error: NO_KEY };
     }
     setTriaging(true);
     setError("");
@@ -118,8 +134,10 @@ export default function Board() {
         })),
       });
       setTriage(data);
+      return data;
     } catch (e) {
       setError(e.message);
+      return { error: e.message };
     } finally {
       setTriaging(false);
     }
@@ -155,7 +173,140 @@ export default function Board() {
     setError("");
   }
 
-  const hasBoard = tasks.length > 0;
+  const hasBoard = mounted && tasks.length > 0;
+
+  // --- WebMCP ------------------------------------------------------------
+  // Agents drive the same functions the buttons call, so the board on screen
+  // is always the record of what a tool did. Ids are the real card ids.
+  const publicTask = (t) => {
+    const flag = flagFor(t.id);
+    return {
+      id: t.id,
+      title: t.title,
+      detail: t.detail,
+      weight: t.weight,
+      stage: t.stage,
+      movedAt: new Date(t.movedAt).toISOString(),
+      daysIdle: daysIdle(t),
+      ...(flag ? { flag: flag.severity, flagNote: flag.note } : {}),
+    };
+  };
+  const snapshot = () => ({
+    hasBoard,
+    goal: savedGoal,
+    horizon,
+    progressPercent: totals.donePct,
+    underwayPercent: totals.doingPct,
+    stages: STAGES.map((x) => ({ id: x.id, label: x.label })),
+    tasks: tasks.map(publicTask),
+    triage: triage ? { headline: triage.headline, focus: triage.focus } : null,
+    busy: busy || triaging,
+  });
+  const validStage = (stage) => STAGES.some((x) => x.id === stage);
+  const badStage = (stage) => fail(`Unknown stage "${stage}".`, "Use todo, doing or done.");
+  const unknownTask = (id) =>
+    fail(
+      `No task with id "${id}".`,
+      tasks.length
+        ? `Known ids: ${tasks.map((t) => t.id).join(", ")}. Call taskboard_get_state for their titles.`
+        : "The board is empty. Build one with taskboard_set_goal first."
+    );
+
+  useWebMCPTools(
+    withHandlers(TASKBOARD_TOOLS, {
+      taskboard_get_state: async () => ok(snapshot()),
+
+      taskboard_set_goal: async ({ goal: g, horizon: h }) => {
+        const nextGoal = (g || "").trim();
+        const nextHorizon = (h || "").trim();
+        if (!nextGoal) return fail("goal is required.", "Pass the outcome the user wants, in a sentence or two.");
+        if (hasBoard) {
+          return fail(
+            "A board already exists.",
+            "Add to it with taskboard_add_task, or call taskboard_reset (the user will confirm) and set the goal again."
+          );
+        }
+        setGoal(nextGoal);
+        setHorizon(nextHorizon);
+        const missing = requireKey("gemini");
+        if (missing) return missing;
+        const res = await plan(nextGoal, nextHorizon);
+        if (res.error) return fail(res.error, "The same message is showing on the page. Fix the cause, then call again.");
+        return ok({ goal: res.goal, horizon: nextHorizon, tasks: res.tasks.map(publicTask) });
+      },
+
+      taskboard_add_task: async ({ title, detail = "", stage = "todo", weight = 3 }) => {
+        const name = (title || "").trim();
+        if (!name) return fail("title is required.", "Two to five words naming the deliverable.");
+        if (!validStage(stage)) return badStage(stage);
+        const task = {
+          id: uid(),
+          title: name,
+          detail: (detail || "").trim(),
+          weight: Math.max(1, Math.min(5, Math.round(Number(weight)) || 3)),
+          stage,
+          movedAt: stamp(),
+        };
+        if (!hasBoard) setSavedGoal(savedGoal || goal.trim() || "Untitled goal");
+        setTasks((ts) => [...ts, task]);
+        return ok({ added: publicTask(task) });
+      },
+
+      taskboard_move_task: async ({ id, stage }) => {
+        const t = tasks.find((x) => x.id === id);
+        if (!t) return unknownTask(id);
+        if (!validStage(stage)) return badStage(stage);
+        if (t.stage === stage) return ok({ id, title: t.title, stage, unchanged: true });
+        move(id, stage);
+        return ok({ id, title: t.title, from: t.stage, to: stage });
+      },
+
+      taskboard_remove_task: async ({ id }, { signal }) => {
+        const t = tasks.find((x) => x.id === id);
+        if (!t) return unknownTask(id);
+        const refused = await gate({
+          toolName: "taskboard_remove_task",
+          title: `Remove "${t.title}" from the board?`,
+          detail: "The card is deleted for good. There is no undo.",
+          signal,
+        });
+        if (refused) return refused;
+        setTasks((ts) => ts.filter((x) => x.id !== id));
+        return ok({ removed: { id, title: t.title } });
+      },
+
+      taskboard_triage: async () => {
+        if (!hasBoard) return fail("The board is empty.", "Build one with taskboard_set_goal first.");
+        const missing = requireKey("gemini");
+        if (missing) return missing;
+        const res = await runTriage();
+        if (res.error) return fail(res.error, "The same message is showing on the page. Fix the cause, then call again.");
+        return ok({ headline: res.headline, focus: res.focus, flags: res.flags });
+      },
+
+      taskboard_age_board: async () => {
+        if (!hasBoard) return fail("The board is empty.", "Build one with taskboard_set_goal first.");
+        ageBoard();
+        return ok({
+          aged: true,
+          note: "Unfinished cards now read as idle for 3 to 20 days. Call taskboard_triage to see what gets flagged.",
+        });
+      },
+
+      taskboard_reset: async (_input, { signal }) => {
+        if (!hasBoard) return ok({ reset: true, note: "The board was already empty." });
+        const refused = await gate({
+          toolName: "taskboard_reset",
+          title: "Clear the whole board?",
+          detail: `Every card under "${savedGoal}" is deleted and the goal screen comes back.`,
+          signal,
+        });
+        if (refused) return refused;
+        reset();
+        return ok({ reset: true });
+      },
+    })
+  );
 
   return (
     <Shell>

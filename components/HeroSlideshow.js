@@ -32,22 +32,26 @@ export default function HeroSlideshow({ slides, className }) {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
+  // Every change of slide goes through here, so the slide being shown and the
+  // one after it are mounted in the same update rather than from an effect.
+  const go = useCallback(
+    (i) => {
+      setIndex(i);
+      setMounted((prev) => {
+        const next = new Set(prev).add(i).add((i + 1) % slides.length);
+        return next.size === prev.size ? prev : next;
+      });
+    },
+    [slides.length]
+  );
+
   useEffect(() => {
     // Someone who asked for less motion gets a single still frame, not a
     // carousel that advances underneath them.
     if (paused || reduced.current || slides.length < 2) return;
-    const t = setTimeout(() => setIndex((i) => (i + 1) % slides.length), INTERVAL);
+    const t = setTimeout(() => go((index + 1) % slides.length), INTERVAL);
     return () => clearTimeout(t);
-  }, [index, paused, slides.length]);
-
-  useEffect(() => {
-    setMounted((prev) => {
-      const next = new Set(prev).add(index).add((index + 1) % slides.length);
-      return next.size === prev.size ? prev : next;
-    });
-  }, [index, slides.length]);
-
-  const go = useCallback((i) => setIndex(i), []);
+  }, [index, paused, slides.length, go]);
 
   return (
     <div

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import Markdown from "@/components/Markdown";
@@ -15,11 +15,17 @@ import {
   loadWorkspace,
   saveWorkspace,
 } from "@/lib/ambient-store";
+import { fail, gate, ok, requireKey, useWebMCPTools, withHandlers } from "@/lib/webmcp";
+import { useMounted } from "@/lib/use-mounted";
+import { AMBIENT_TOOLS } from "./tools";
 import s from "./scribe.module.css";
 
 const SAMPLE = `Okay so two things from the standup. The roof guy came back with a quote, eighteen hundred for the flashing and the gutter section, he can start the ninth. I want to get a second quote before I say yes. Also Priya is out the week of the twelfth so we need to move the design review, probably to the fifteenth, and someone has to own the migration checklist while she's gone — I think that's Marcus. And remind me, I keep forgetting, the car registration expires end of next month.`;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const EMPTY_WS = emptyWorkspace();
+const noSubscribe = () => () => {};
+const speechAvailable = () => Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
 
 /** Wrap the vendor-prefixed Web Speech API. Returns null when unavailable. */
 function makeRecognizer() {
@@ -35,8 +41,11 @@ function makeRecognizer() {
 
 export default function Scribe() {
   const keys = useKeys();
-  const [ws, setWs] = useState(emptyWorkspace);
-  const [hydrated, setHydrated] = useState(false);
+  const [ws, setWs] = useState(loadWorkspace);
+  // The saved workspace is read in the initializer; the server rendered it
+  // empty, so the sidebar draws it only once hydration is over.
+  const mounted = useMounted();
+  const view = mounted ? ws : EMPTY_WS;
   const [selectedId, setSelectedId] = useState(null);
   const [mode, setMode] = useState("voice");
   const [listening, setListening] = useState(false);
@@ -46,7 +55,12 @@ export default function Scribe() {
   const [reply, setReply] = useState("");
   const [log, setLog] = useState([]);
   const [error, setError] = useState("");
+  // Flipped off when the microphone fails at runtime; support itself is read
+  // as an external value so the server can assume it and the client correct it.
   const [speechOK, setSpeechOK] = useState(true);
+  const speechSupported = useSyncExternalStore(noSubscribe, speechAvailable, () => true);
+  const canSpeak = speechOK && speechSupported;
+  const activeMode = canSpeak ? mode : "type";
 
   const recRef = useRef(null);
   const finalRef = useRef("");
@@ -62,17 +76,8 @@ export default function Scribe() {
 
   // --- persistence -------------------------------------------------------
   useEffect(() => {
-    setWs(loadWorkspace());
-    setHydrated(true);
-    if (!makeRecognizer()) {
-      setSpeechOK(false);
-      setMode("type");
-    }
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) saveWorkspace(ws);
-  }, [ws, hydrated]);
+    if (mounted) saveWorkspace(ws);
+  }, [ws, mounted]);
 
   const selected = useMemo(
     () => ws.notes.find((n) => n.id === selectedId) || null,
@@ -83,10 +88,11 @@ export default function Scribe() {
   const run = useCallback(
     async (text) => {
       const transcript = text.trim();
-      if (!transcript || busy) return;
+      if (!transcript || busy) return { error: busy ? "Still organizing the last one." : "Nothing to file." };
       if (!keys.gemini) {
-        setError("Add your Gemini key with the key button up top first.");
-        return;
+        const msg = "Add your Gemini key with the key button up top first.";
+        setError(msg);
+        return { error: msg };
       }
 
       setBusy(true);
@@ -108,11 +114,13 @@ export default function Scribe() {
         // Apply one action at a time so the user watches the workspace
         // assemble itself rather than seeing it snap into place.
         let current = ws;
+        const entries = [];
         for (const action of data.actions || []) {
           const { workspace, log: entry } = applyAction(current, action);
           current = workspace;
           setWs(workspace);
           if (entry) {
+            entries.push(entry);
             setLog((l) => [...l, entry]);
             if (entry.icon === "note" && entry.id) setSelectedId(entry.id);
             await sleep(320);
@@ -123,9 +131,11 @@ export default function Scribe() {
           setError(data.reply || "Nothing in there worth filing.");
         }
         trackRunFinished("ambient", "success");
+        return { reply: data.reply || "", entries, workspace: current };
       } catch (e) {
         setError(e.message);
         trackRunFinished("ambient", "error");
+        return { error: e.message };
       } finally {
         setBusy(false);
       }
@@ -257,16 +267,16 @@ export default function Scribe() {
 
   // --- derived tree ------------------------------------------------------
   const tree = useMemo(() => {
-    const groups = ws.folders.map((f) => ({
+    const groups = view.folders.map((f) => ({
       folder: f,
-      notes: ws.notes.filter((n) => n.folderId === f.id),
+      notes: view.notes.filter((n) => n.folderId === f.id),
     }));
-    const loose = ws.notes.filter((n) => !n.folderId);
+    const loose = view.notes.filter((n) => !n.folderId);
     if (loose.length) groups.push({ folder: { id: "__loose", name: "Unfiled" }, notes: loose });
     return groups;
-  }, [ws]);
+  }, [view]);
 
-  const isEmpty = hydrated && !ws.notes.length;
+  const isEmpty = mounted && !ws.notes.length;
 
   const reset = () => {
     clearWorkspace();
@@ -277,6 +287,95 @@ export default function Scribe() {
     setError("");
   };
 
+  // --- WebMCP ------------------------------------------------------------
+  // Capture goes through run(), the same path as the microphone and the
+  // textarea, so the sidebar assembles itself on screen while the agent
+  // waits. Deleting goes through the confirm bar first.
+  const folderName = (id) => ws.folders.find((f) => f.id === id)?.name || null;
+  const publicNote = (n, full = false) => ({
+    id: n.id,
+    title: n.title,
+    folderId: n.folderId,
+    folder: folderName(n.folderId),
+    updatedAt: new Date(n.updatedAt).toISOString(),
+    ...(full ? { body: n.body } : { preview: n.body.slice(0, 140).replace(/\s+/g, " ") }),
+  });
+  const listing = (space = ws) => ({
+    folders: space.folders.map((f) => ({
+      id: f.id,
+      name: f.name,
+      noteCount: space.notes.filter((n) => n.folderId === f.id).length,
+    })),
+    notes: space.notes.map((n) => ({ ...publicNote(n), folder: space.folders.find((f) => f.id === n.folderId)?.name || null })),
+    unfiled: space.notes.filter((n) => !n.folderId).length,
+  });
+  const noNote = (id) =>
+    fail(
+      `No note with id "${id}".`,
+      ws.notes.length ? "Call ambient_list_workspace for current ids." : "The workspace is empty."
+    );
+
+  useWebMCPTools(
+    withHandlers(AMBIENT_TOOLS, {
+      ambient_list_workspace: async () => ok({ ...listing(), busy, selectedId }),
+
+      ambient_capture: async ({ text }) => {
+        const transcript = (text || "").trim();
+        if (!transcript) return fail("text is required.", "Pass what the user said, verbatim.");
+        if (busy) return fail("Still organizing the last capture.", "Call again when ambient_list_workspace reports busy: false.");
+        const missing = requireKey("gemini");
+        if (missing) return missing;
+        // Show the words being filed, the way a typed capture would.
+        setMode("type");
+        setDraft(transcript);
+        const res = await run(transcript);
+        if (res.error) return fail(res.error, "The same message is showing on the page. Fix the cause, then call again.");
+        return ok({
+          reply: res.reply,
+          filed: res.entries.map((e) => ({ action: e.verb, target: e.target, noteId: e.icon === "note" ? e.id : undefined })),
+          workspace: listing(res.workspace),
+        });
+      },
+
+      ambient_get_note: async ({ id }) => {
+        const note = ws.notes.find((n) => n.id === id);
+        if (!note) return noNote(id);
+        setSelectedId(note.id);
+        return ok(publicNote(note, true));
+      },
+
+      ambient_delete_note: async ({ id }, { signal }) => {
+        const note = ws.notes.find((n) => n.id === id);
+        if (!note) return noNote(id);
+        const refused = await gate({
+          toolName: "ambient_delete_note",
+          title: `Delete the note "${note.title}"?`,
+          detail: `It is filed under ${folderName(note.folderId) || "Unfiled"}. There is no undo.`,
+          signal,
+        });
+        if (refused) return refused;
+        const { workspace, log: entry } = applyAction(ws, { type: "delete_note", noteId: note.id });
+        setWs(workspace);
+        if (entry) setLog((l) => [...l, entry]);
+        if (selectedId === note.id) setSelectedId(null);
+        return ok({ deleted: { id: note.id, title: note.title }, notesLeft: workspace.notes.length });
+      },
+
+      ambient_clear_workspace: async (_input, { signal }) => {
+        if (!ws.notes.length && !ws.folders.length) return ok({ cleared: true, note: "The workspace was already empty." });
+        const refused = await gate({
+          toolName: "ambient_clear_workspace",
+          title: "Clear the whole workspace?",
+          detail: `${ws.notes.length} notes in ${ws.folders.length} folders are deleted for good.`,
+          signal,
+        });
+        if (refused) return refused;
+        reset();
+        return ok({ cleared: true });
+      },
+    })
+  );
+
   return (
     <Shell>
       <div className={s.layout}>
@@ -284,9 +383,9 @@ export default function Scribe() {
         <aside className={s.sidebar}>
           <div className={s.sideHead}>
             <span className="badge badge-blue">
-              {ws.notes.length} note{ws.notes.length === 1 ? "" : "s"}
+              {view.notes.length} note{view.notes.length === 1 ? "" : "s"}
             </span>
-            {ws.notes.length > 0 && (
+            {view.notes.length > 0 && (
               <button className="btn btn-ghost btn-icon btn-sm" onClick={reset} aria-label="Clear workspace">
                 <Icon name="trash" size={16} />
               </button>
@@ -377,7 +476,7 @@ export default function Scribe() {
               </div>
             )}
 
-            {mode === "voice" ? (
+            {activeMode === "voice" ? (
               <div className={s.voice}>
                 {listening && (
                   /* Decorative — "Listening…" below already announces the state,
@@ -433,7 +532,7 @@ export default function Scribe() {
                   }}
                 />
                 <div className="spread">
-                  {speechOK ? (
+                  {canSpeak ? (
                     <button
                       className="btn btn-ghost btn-sm"
                       onClick={() => setMode("voice")}

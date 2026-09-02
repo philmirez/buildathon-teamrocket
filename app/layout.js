@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 const DESCRIPTION =
-  "Six AI builds for the DC DevFest 2026 Buildathon. Each runs on your own Gemini key.";
+  "Six AI builds for the DC DevFest 2026 Buildathon. Each runs on your own Gemini key, and every one is drivable by an AI agent through WebMCP.";
 
 export const metadata = {
   // Required for Next to emit absolute og:image URLs; crawlers reject relative ones.

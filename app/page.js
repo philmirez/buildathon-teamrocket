@@ -2,9 +2,8 @@ import Link from "next/link";
 import HeroSlideshow from "@/components/HeroSlideshow";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
-import { BUILDS, byTier } from "@/lib/builds";
+import { BUILDS } from "@/lib/builds";
 import { TEAM, initials } from "@/lib/team";
-import ReferralBanner from "@/components/ReferralBanner";
 import Walkthroughs from "@/components/Walkthroughs";
 import styles from "./page.module.css";
 
@@ -35,24 +34,16 @@ const HERO_SLIDES = [
 ];
 
 const REPO = "https://github.com/philmirez/buildathon-teamrocket";
-const CLAUDE_CODE = "https://claude.ai/referral/LXPYIRcZng";
+const DEVFEST = "https://www.devfestdc.org/";
+const CLAUDE_CODE = "https://claude.com/product/claude-code";
+const WEBMCP_CHALLENGE = "https://openai.com/webmcp-challenge/";
+const VERCEL = "https://vercel.com";
+const GEMINI = "https://ai.google.dev/gemini-api";
 
 export default function Home() {
-  const tiers = byTier();
 
   return (
     <Shell>
-      <ReferralBanner
-        href={CLAUDE_CODE}
-        classNames={{
-          wrap: styles.bannerWrap,
-          banner: styles.banner,
-          icon: styles.bannerIcon,
-          text: styles.bannerText,
-          cta: styles.bannerCta,
-        }}
-      />
-
       <div className={styles.layout}>
       <aside className={styles.side}>
         <HeroSlideshow className={styles.sideArt} slides={HERO_SLIDES} />
@@ -122,59 +113,65 @@ export default function Home() {
             one Team Rocket.
           </h1>
           <p className={`t-body t-secondary t-balance ${styles.sub}`}>
-            Watch any of them run, then try it yourself below. Each build works on your own
-            Gemini key — paste it once with the key button above.
+            Watch any of them run, then try it yourself below.
           </p>
+          <ul className={`t-body t-secondary ${styles.subList}`}>
+            <li>
+              <Icon name="trophy" size={16} />
+              <span>
+                Third place at the{" "}
+                <a href={DEVFEST} target="_blank" rel="noreferrer noopener">
+                  DC DevFest 2026 Buildathon
+                </a>
+                .
+              </span>
+            </li>
+            <li>
+              <Icon name="sparkle" size={16} />
+              <span>
+                Written with{" "}
+                <a href={CLAUDE_CODE} target="_blank" rel="noreferrer noopener">
+                  Claude Code
+                </a>
+                .
+              </span>
+            </li>
+            <li>
+              <Icon name="key" size={16} />
+              <span>
+                Run on{" "}
+                <a href={GEMINI} target="_blank" rel="noreferrer noopener">
+                  Gemini
+                </a>{" "}
+                with your own key. Paste it once with the key button above.
+              </span>
+            </li>
+            <li>
+              <Icon name="globe" size={16} />
+              <span>
+                Hosted on{" "}
+                <a href={VERCEL} target="_blank" rel="noreferrer noopener">
+                  Vercel
+                </a>
+                .
+              </span>
+            </li>
+            <li>
+              <Icon name="bot" size={16} />
+              <span>
+                We heard about the{" "}
+                <a href={WEBMCP_CHALLENGE} target="_blank" rel="noreferrer noopener">
+                  OpenAI WebMCP Challenge
+                </a>{" "}
+                and, being the AI obsessives we are, could not help ourselves. Every build can
+                now be driven by an AI agent through <Link href="/webmcp">WebMCP</Link>.
+              </span>
+            </li>
+          </ul>
         </div>
 
         <Walkthroughs builds={BUILDS} />
       </section>
-
-      {tiers.map((tier) => (
-        <section key={tier.id} className={styles.tier}>
-          <header className={styles.tierHead}>
-            <h2 className="t-h3">{tier.name}</h2>
-            <span className={styles.tierCount}>{tier.builds.length}</span>
-          </header>
-
-          {tier.note && <p className={`t-sm t-secondary ${styles.tierNote}`}>{tier.note}</p>}
-
-          <div className={styles.grid}>
-            {tier.builds.map((b) => (
-              <Link
-                key={b.slug}
-                href={`/${b.slug}`}
-                className={`card card-hover ${styles.tile}`}
-                style={{ "--tint": b.tint }}
-              >
-                <span className={styles.tileIcon} aria-hidden="true">
-                  <Icon name={b.icon} size={22} />
-                </span>
-
-                <div className={styles.tileBody}>
-                  <div className={styles.tileTitle}>
-                    <h3 className="t-h3">{b.name}</h3>
-                    {b.updated && <span className="badge badge-red">Updated</span>}
-                  </div>
-                  <p className="t-sm t-secondary">{b.solution}</p>
-                  {b.updated && (
-                    <p className={`t-xs ${styles.tileNew}`}>
-                      <Icon name="sparkle" size={13} />
-                      <span>
-                        New {b.updated.on} — {b.updated.note}.
-                      </span>
-                    </p>
-                  )}
-                </div>
-
-                <span className={styles.tileGo} aria-hidden="true">
-                  <Icon name="arrowRight" size={18} />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ))}
 
       <footer className={styles.footer}>
         <div className={styles.footCol}>
@@ -182,7 +179,10 @@ export default function Home() {
             <Icon name="github" size={16} />
             philmirez/buildathon-teamrocket
           </a>
-          <p className="t-xs t-secondary">Keys stay in your browser.</p>
+          <p className="t-xs t-secondary">
+            Keys stay in your browser. Every build is drivable by an agent through{" "}
+            <Link href="/webmcp">WebMCP</Link>.
+          </p>
         </div>
 
       </footer>
