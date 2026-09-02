@@ -20,7 +20,9 @@ const toolCount = (slug) => CATALOG.find((g) => g.build === slug)?.tools.length 
  * it can start playback from. Switching tabs remounts via `key` so the new
  * source actually takes.
  */
-export default function Walkthroughs({ builds }) {
+export default function Walkthroughs({ builds: all }) {
+  // Builds you can watch first, in their own order; the rest trail.
+  const builds = [...all.filter((b) => b.video), ...all.filter((b) => !b.video)];
   const [active, setActive] = useState(builds[0]?.slug);
   // The overlay only covers the un-started state; once playing, the native
   // controls take over. Switching tabs remounts the video, so this resets too.
