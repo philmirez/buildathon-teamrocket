@@ -1,37 +1,11 @@
 import Link from "next/link";
-import HeroSlideshow from "@/components/HeroSlideshow";
+import RocketArt from "@/components/RocketArt";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import { BUILDS } from "@/lib/builds";
 import { TEAM, initials } from "@/lib/team";
 import Walkthroughs from "@/components/Walkthroughs";
 import styles from "./page.module.css";
-
-/*
- * All three are animated; next/image runs them unoptimized so the frames
- * survive. Slide 2 is an animated-WebP re-encode of the source GIF (same 19
- * frames, 71% smaller) — the .gif is kept in public/ as the original.
- */
-const HERO_SLIDES = [
-  {
-    src: "/teamrocket1.webp",
-    alt: "Team Rocket silhouette above the caption \u201cPrepare for trouble\u201d",
-    width: 500,
-    height: 344,
-  },
-  {
-    src: "/teamrocket2.webp",
-    alt: "The Team Rocket trio striking their entrance pose on an open road",
-    width: 540,
-    height: 432,
-  },
-  {
-    src: "/teamrocket3.webp",
-    alt: "Team Rocket animation over a field of pink sparkles and roses",
-    width: 499,
-    height: 374,
-  },
-];
 
 const REPO = "https://github.com/philmirez/buildathon-teamrocket";
 const DEVFEST = "https://www.devfestdc.org/";
@@ -46,7 +20,7 @@ export default function Home() {
     <Shell>
       <div className={styles.layout}>
       <aside className={styles.side}>
-        <HeroSlideshow className={styles.sideArt} slides={HERO_SLIDES} />
+        <RocketArt className={styles.sideArt} />
 
         <header className={styles.tierHead}>
           <h2 className="t-h3">Team Rocket</h2>

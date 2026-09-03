@@ -1,0 +1,72 @@
+.frame {
+  position: relative; width: 100%;
+  aspect-ratio: 500 / 344;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--e-2);
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 110%, color-mix(in srgb, var(--red-3) 22%, transparent), transparent 60%),
+    linear-gradient(180deg, #0B1020 0%, #141A33 55%, #1B1230 100%);
+}
+.compact { aspect-ratio: 1; border-radius: var(--r-pill); box-shadow: none; }
+
+.sky { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.star { fill: #fff; opacity: .55; animation: twinkle 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes twinkle {
+  0%, 100% { opacity: .35; transform: scale(.8); }
+  50%      { opacity: 1;   transform: scale(1.15); }
+}
+
+/* Thin streaks falling past the rocket: it reads as climbing, not hovering. */
+.streak {
+  stroke: #fff; stroke-width: .5; stroke-linecap: round; opacity: 0;
+  animation: fall 3.9s linear infinite;
+}
+@keyframes fall {
+  0%   { transform: translateY(-10px); opacity: 0; stroke-dasharray: 0 100; }
+  10%  { opacity: .45; stroke-dasharray: 10 100; }
+  90%  { opacity: .2; }
+  100% { transform: translateY(110px); opacity: 0; stroke-dasharray: 6 100; }
+}
+
+.rocket {
+  position: absolute; left: 50%; top: 50%;
+  height: 74%; width: auto;
+  transform: translate(-50%, -52%);
+  animation: bob 3.2s ease-in-out infinite;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .45));
+}
+.compact .rocket { height: 70%; }
+@keyframes bob {
+  0%, 100% { transform: translate(-50%, -52%) rotate(-1.5deg); }
+  50%      { transform: translate(-50%, -56%) rotate(1.5deg); }
+}
+
+.red   { fill: var(--red-3); }
+.body  { fill: #F4F5F7; }
+.ring  { fill: #C9CDD6; }
+.glass { fill: #3665F3; }
+.glint { fill: #fff; opacity: .8; }
+.seam  { stroke: #C9CDD6; stroke-width: 2.5; stroke-linecap: round; }
+
+.flame { transform-box: fill-box; transform-origin: 50% 0; animation: flicker .34s ease-in-out infinite alternate; }
+.flameOuter { fill: #FF8A1F; opacity: .9; }
+.flameInner { fill: #FFE45C; }
+@keyframes flicker {
+  from { transform: scaleY(.82) scaleX(.94); }
+  to   { transform: scaleY(1.12) scaleX(1.04); }
+}
+
+.puffs circle { fill: #fff; opacity: 0; transform-box: fill-box; transform-origin: center; animation: puff 1.8s ease-out infinite; }
+@keyframes puff {
+  0%   { opacity: .55; transform: translateY(0) scale(.5); }
+  100% { opacity: 0;   transform: translateY(26px) scale(1.8); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star, .streak, .rocket, .flame, .puffs circle { animation: none; }
+  .streak { opacity: 0; }
+  .puffs circle { opacity: .25; }
+}

@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import Markdown from "@/components/Markdown";
+import RocketArt from "@/components/RocketArt";
 import { trackRunFinished, trackRunStarted } from "@/lib/analytics";
 import { apiPost, useKeys } from "@/lib/keys";
 import {
@@ -479,17 +479,10 @@ export default function Scribe() {
             {activeMode === "voice" ? (
               <div className={s.voice}>
                 {listening && (
-                  /* Decorative — "Listening…" below already announces the state,
-                     so this stays out of the accessibility tree. */
-                  <Image
-                    className={s.voiceArt}
-                    src="/teamrocketsvoice.webp"
-                    alt=""
-                    aria-hidden="true"
-                    width={355}
-                    height={266}
-                    unoptimized
-                  />
+                  /* Decorative: "Listening…" below already announces the state. */
+                  <div className={s.voiceArt} aria-hidden="true">
+                    <RocketArt compact label="" />
+                  </div>
                 )}
                 <p className={`t-sm ${s.liveText}`}>
                   {busy
