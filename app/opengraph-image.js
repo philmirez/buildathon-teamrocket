@@ -9,7 +9,7 @@ export const alt = "Team Rocket — DC DevFest 2026 Buildathon. Six AI builds.";
 
 // Satori has no filesystem access, so the mark is inlined as a data URI.
 const logo = `data:image/png;base64,${readFileSync(
-  join(process.cwd(), "public", "teamrocketlogo.png")
+  join(process.cwd(), "public", "r-mark.png")
 ).toString("base64")}`;
 
 const RED = "#E53238";

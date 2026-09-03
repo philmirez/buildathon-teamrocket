@@ -387,7 +387,7 @@ export default function Shell({ children, accent }) {
             {/* The link already carries the label, so the mark is decorative. */}
             <Image
               className={styles.logo}
-              src="/teamrocketlogo.png"
+              src="/r-mark.png"
               alt=""
               /* Sized to its display box, not the source: passing the full
                  472px made Next serve a 1080px variant for a 30px mark. */
