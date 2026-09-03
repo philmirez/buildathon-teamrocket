@@ -157,7 +157,9 @@ export default function Walkthroughs({ builds: all, demo = null, showClips = tru
           </span>
         </Link>
 
-        {video ? (
+        {/* With clips hidden there is no middle card at all: two choices, no
+            apology. With clips on, a build without one says so. */}
+        {!showClips ? null : video ? (
           <button type="button" className={s.action} onClick={() => watch("human")}>
             <span className={s.actionIcon} aria-hidden="true">
               <Icon name="play" size={18} />
@@ -175,13 +177,9 @@ export default function Walkthroughs({ builds: all, demo = null, showClips = tru
               <Icon name="clock" size={18} />
             </span>
             <span className={s.actionText}>
-              <span className={s.actionTitle}>
-                {current.video ? "Walkthrough being re-recorded" : "No walkthrough yet"}
-              </span>
+              <span className={s.actionTitle}>No walkthrough yet</span>
               <span className={s.actionSub}>
-                {current.video
-                  ? "The build has moved on since the buildathon clip. A fresh one is coming."
-                  : `The build runs and its agent tools are live.${current.wip ? ` ${current.wip}` : ""}`}
+                The build runs and its agent tools are live.{current.wip ? ` ${current.wip}` : ""}
               </span>
             </span>
           </div>
