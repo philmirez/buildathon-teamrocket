@@ -86,9 +86,6 @@ export default function Home() {
             <br />
             one Team Rocket.
           </h1>
-          <p className={`t-body t-secondary t-balance ${styles.sub}`}>
-            Watch any of them run, then try it yourself below.
-          </p>
           <ul className={`t-body t-secondary ${styles.subList}`}>
             <li>
               <Icon name="trophy" size={16} />
@@ -142,10 +139,6 @@ export default function Home() {
               </span>
             </li>
           </ul>
-          <p className={`t-sm t-secondary ${styles.forkNote}`}>
-            Built in the open as a worked example. Fork it, read{" "}
-            <Link href="/webmcp">/webmcp</Link>, and wire your own app the same way.
-          </p>
         </div>
 
         <Walkthroughs builds={BUILDS} />
