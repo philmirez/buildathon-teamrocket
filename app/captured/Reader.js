@@ -262,7 +262,9 @@ export default function Reader() {
                 <Icon name="sparkle" size={16} />
                 Use a sample chapter
               </button>
-              <button className="btn btn-lg" onClick={begin} disabled={busy || text.trim().length < 200}>
+              {/* No arguments on purpose: begin() takes the text as a parameter
+                  for the WebMCP tool, and React would otherwise pass the event. */}
+              <button className="btn btn-lg" onClick={() => begin()} disabled={busy || text.trim().length < 200}>
                 {busy ? <span className="spinner" /> : null}
                 {busy ? "Finding the scenes" : "Start reading"}
               </button>

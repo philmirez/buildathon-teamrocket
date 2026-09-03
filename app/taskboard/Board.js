@@ -370,7 +370,10 @@ export default function Board() {
                   <Icon name="sparkle" size={16} />
                   Use an example
                 </button>
-                <button className="btn btn-lg" onClick={plan} disabled={busy || !goal.trim()}>
+                {/* Called with no arguments on purpose: plan() takes the goal and
+                    horizon as parameters for the WebMCP tool, and React would
+                    otherwise hand it the click event. */}
+                <button className="btn btn-lg" onClick={() => plan()} disabled={busy || !goal.trim()}>
                   {busy ? <span className="spinner" /> : null}
                   {busy ? "Breaking it down" : "Build the board"}
                 </button>

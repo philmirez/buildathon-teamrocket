@@ -419,7 +419,7 @@ export default function Differ() {
                 </button>
                 <button
                   className="btn btn-lg"
-                  onClick={run}
+                  onClick={() => run()}
                   disabled={!oldText.trim() || !newText.trim()}
                 >
                   Diff them

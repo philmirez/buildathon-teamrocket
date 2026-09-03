@@ -348,7 +348,7 @@ export default function GapFinder() {
                   <Icon name="sparkle" size={16} />
                   Load a sample pair
                 </button>
-                <button className="btn btn-lg" onClick={analyze} disabled={!job.trim() || !resume.trim()}>
+                <button className="btn btn-lg" onClick={() => analyze()} disabled={!job.trim() || !resume.trim()}>
                   Find the gap
                   <Icon name="arrowRight" size={17} />
                 </button>
