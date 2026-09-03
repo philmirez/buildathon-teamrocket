@@ -1,0 +1,5 @@
+.embed {
+  display: block; width: 100%; aspect-ratio: 16 / 9;
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: #000;
+}

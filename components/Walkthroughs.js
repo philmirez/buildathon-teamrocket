@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import Icon from "./Icon";
+import YouTubeEmbed from "./YouTubeEmbed";
 import { trackWalkthroughCta } from "@/lib/analytics";
 import { CATALOG } from "@/lib/webmcp-catalog";
 import s from "./Walkthroughs.module.css";
@@ -20,9 +21,16 @@ const toolCount = (slug) => CATALOG.find((g) => g.build === slug)?.tools.length 
  * it can start playback from. Switching tabs remounts via `key` so the new
  * source actually takes.
  */
-export default function Walkthroughs({ builds: all }) {
-  // Builds you can watch first, in their own order; the rest trail.
-  const builds = [...all.filter((b) => b.video), ...all.filter((b) => !b.video)];
+const WEBMCP_CHALLENGE = "https://openai.com/webmcp-challenge/";
+
+export default function Walkthroughs({ builds: all, demo = null }) {
+  // Builds you can watch first, in their own order, then the rest, then the
+  // challenge demo as its own tab when there is one.
+  const builds = [
+    ...all.filter((b) => b.video),
+    ...all.filter((b) => !b.video),
+    ...(demo ? [{ ...demo, isDemo: true }] : []),
+  ];
   const [active, setActive] = useState(builds[0]?.slug);
   // The overlay only covers the un-started state; once playing, the native
   // controls take over. Switching tabs remounts the video, so this resets too.
@@ -111,6 +119,28 @@ export default function Walkthroughs({ builds: all }) {
 
       {/* The three things a visitor can do with the selected build, right
           under the tabs where the choice was made. */}
+      {current.isDemo ? (
+        <div className={s.actions}>
+          <Link className={s.action} href="/webmcp">
+            <span className={s.actionIcon} aria-hidden="true">
+              <Icon name="bot" size={18} />
+            </span>
+            <span className={s.actionText}>
+              <span className={s.actionTitle}>Read the tool catalog</span>
+              <span className={s.actionSub}>Every tool on the site, with its schema</span>
+            </span>
+          </Link>
+          <a className={s.action} href={WEBMCP_CHALLENGE} target="_blank" rel="noreferrer noopener">
+            <span className={s.actionIcon} aria-hidden="true">
+              <Icon name="trophy" size={18} />
+            </span>
+            <span className={s.actionText}>
+              <span className={s.actionTitle}>The challenge</span>
+              <span className={s.actionSub}>OpenAI WebMCP Challenge, on openai.com</span>
+            </span>
+          </a>
+        </div>
+      ) : (
       <div className={s.actions}>
         <Link
           className={s.action}
@@ -182,6 +212,9 @@ export default function Walkthroughs({ builds: all }) {
           </Link>
         )}
       </div>
+      )}
+
+      {current.isDemo && <YouTubeEmbed id={current.youtubeId} title={current.title} />}
 
       {current.video && (
       <div className={s.stage}>
@@ -238,10 +271,13 @@ export default function Walkthroughs({ builds: all }) {
                that tracks the live build. Saying so is what lets the apps keep
                changing without the videos silently going stale. */
             <p className={`t-xs t-secondary ${s.stamp}`}>
-              Recorded {current.recorded} at the DC DevFest buildathon
-              {current.updated
-                ? " — so this clip is from before the change above."
-                : " — the live build may have moved on since."}
+              {current.isDemo
+                ? `Recorded ${current.recorded} for the OpenAI WebMCP Challenge submission.`
+                : `Recorded ${current.recorded} at the DC DevFest buildathon${
+                    current.updated
+                      ? " — so this clip is from before the change above."
+                      : " — the live build may have moved on since."
+                  }`}
             </p>
           )}
         </div>

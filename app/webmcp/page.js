@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
-import { bySlug } from "@/lib/builds";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
+import { WEBMCP_DEMO, bySlug } from "@/lib/builds";
 import { ALL_TOOLS, CATALOG } from "@/lib/webmcp-catalog";
 import Live from "./Live";
 import s from "./webmcp.module.css";
@@ -88,6 +89,17 @@ export default function Page() {
         </header>
 
         <Live />
+
+        {WEBMCP_DEMO.youtubeId && (
+          <section className="stack">
+            <div className="spread">
+              <h2 className="t-h2">Watch an agent drive it</h2>
+              <span className="t-sm t-secondary">Recorded {WEBMCP_DEMO.recorded}</span>
+            </div>
+            <YouTubeEmbed id={WEBMCP_DEMO.youtubeId} title={WEBMCP_DEMO.title} />
+            <p className="t-sm t-secondary">{WEBMCP_DEMO.solution}</p>
+          </section>
+        )}
 
         <div className={s.facts}>
           <div className={`card ${s.fact}`}>
