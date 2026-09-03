@@ -1,7 +1,9 @@
-# Team Rocket — DC DevFest 2026 Buildathon
+# Team Rocket Command Center
 
-Six AI builds behind one Next.js app. Each lives at its own slug; the home page
-links to all six.
+Six AI builds behind one Next.js app, every one drivable by an agent through
+WebMCP. Each lives at its own slug; the home page links to all six. It is
+built in the open as a worked example: fork it, read the WebMCP section, and
+wire your own app the same way.
 
 **Result:** 🥉 Third place, DC DevFest 2026 Buildathon.
 

@@ -9,13 +9,13 @@ const inter = Inter({
 });
 
 const DESCRIPTION =
-  "Six AI builds for the DC DevFest 2026 Buildathon. Each runs on your own Gemini key, and every one is drivable by an AI agent through WebMCP.";
+  "Six AI builds, every one drivable by an agent through WebMCP. Bring your own Gemini key, watch the agent work on the same screen you do, and copy the pattern.";
 
 export const metadata = {
   // Required for Next to emit absolute og:image URLs; crawlers reject relative ones.
   metadataBase: new URL("https://www.teamrocket.website"),
   title: {
-    default: "Team Rocket · DC DevFest 2026",
+    default: "Team Rocket Command Center",
     template: "%s · Team Rocket",
   },
   description: DESCRIPTION,
@@ -23,13 +23,13 @@ export const metadata = {
   openGraph: {
     type: "website",
     url: "/",
-    siteName: "Team Rocket · DC DevFest 2026",
-    title: "Team Rocket · DC DevFest 2026",
+    siteName: "Team Rocket Command Center",
+    title: "Team Rocket Command Center",
     description: DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Team Rocket · DC DevFest 2026",
+    title: "Team Rocket Command Center",
     description: DESCRIPTION,
   },
 };

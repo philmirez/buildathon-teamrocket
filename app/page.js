@@ -142,6 +142,10 @@ export default function Home() {
               </span>
             </li>
           </ul>
+          <p className={`t-sm t-secondary ${styles.forkNote}`}>
+            Built in the open as a worked example. Fork it, read{" "}
+            <Link href="/webmcp">/webmcp</Link>, and wire your own app the same way.
+          </p>
         </div>
 
         <Walkthroughs builds={BUILDS} />

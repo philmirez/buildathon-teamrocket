@@ -5,7 +5,7 @@ import { BUILDS } from "@/lib/builds";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Team Rocket — DC DevFest 2026 Buildathon. Six AI builds.";
+export const alt = "Team Rocket Command Center. Six AI builds, every one drivable by an agent through WebMCP.";
 
 // Satori has no filesystem access, so the mark is inlined as a data URI.
 const logo = `data:image/png;base64,${readFileSync(
@@ -54,7 +54,7 @@ export default function OpengraphImage() {
               color: "#8B95A5",
             }}
           >
-            DC DevFest 2026 Buildathon
+            Command Center
           </div>
         </div>
 
@@ -72,7 +72,7 @@ export default function OpengraphImage() {
             Six builds, one Team Rocket.
           </div>
           <div style={{ display: "flex", fontSize: 30, color: "#A3ADBC" }}>
-            Every build runs on your own Gemini key.
+            Every build drivable by an agent through WebMCP, on your own Gemini key.
           </div>
         </div>
 
