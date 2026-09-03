@@ -1,472 +1,332 @@
 1
-00:00:00,050 --> 00:00:01,730
+00:00:00,000 --> 00:00:01,480
 Hey, everyone. Team Rocket here.
 
 2
-00:00:01,730 --> 00:00:03,420
+00:00:01,480 --> 00:00:03,020
 This is a demo for the Devpost
 
 3
-00:00:03,420 --> 00:00:05,800
+00:00:03,020 --> 00:00:04,700
 OpenAI WebMCP Challenge.
 
 4
-00:00:06,380 --> 00:00:08,520
-To start things off, Team Rocket is a
+00:00:04,700 --> 00:00:06,500
+To start things off, Team Rocket
 
 5
-00:00:08,520 --> 00:00:10,950
-collection of six AI-powered builds
+00:00:06,500 --> 00:00:08,000
+is a collection of six AI-powered
 
 6
-00:00:10,950 --> 00:00:12,800
-/ applications,
+00:00:08,000 --> 00:00:09,300
+builds/applications,
 
 7
-00:00:12,800 --> 00:00:15,000
+00:00:09,300 --> 00:00:11,200
 each exploring how people and agents
 
 8
-00:00:15,000 --> 00:00:17,150
+00:00:11,200 --> 00:00:13,200
 can collaborate on the open web.
 
 9
-00:00:17,830 --> 00:00:19,950
+00:00:13,200 --> 00:00:14,500
 We did implement WebMCP
 
 10
-00:00:19,950 --> 00:00:22,030
+00:00:14,500 --> 00:00:15,800
 across all applications.
 
 11
-00:00:22,030 --> 00:00:24,630
+00:00:15,800 --> 00:00:17,400
 In order to see exactly how we did this,
 
 12
-00:00:24,630 --> 00:00:26,680
+00:00:17,400 --> 00:00:19,000
 you can take a look over here.
 
 13
-00:00:26,920 --> 00:00:28,800
-And as you can see, we used
+00:00:19,000 --> 00:00:20,900
+And as you can see, we used a total
 
 14
-00:00:28,800 --> 00:00:30,680
-a total of 44 tools
+00:00:20,900 --> 00:00:22,800
+of 44 tools across six builds,
 
 15
-00:00:30,680 --> 00:00:32,550
-across six builds,
-
-16
-00:00:32,550 --> 00:00:35,150
+00:00:22,800 --> 00:00:24,800
 six of which wait for human confirmation.
 
-17
-00:00:35,150 --> 00:00:37,150
+16
+00:00:24,800 --> 00:00:26,500
 This is where that collaboration
 
-18
-00:00:37,150 --> 00:00:38,380
+17
+00:00:26,500 --> 00:00:27,800
 comes into play.
 
-19
-00:00:38,380 --> 00:00:40,230
+18
+00:00:27,800 --> 00:00:29,600
 And as you can see here as well,
 
-20
-00:00:40,230 --> 00:00:42,420
+19
+00:00:29,600 --> 00:00:31,500
 we did build in safety mechanisms
 
-21
-00:00:42,420 --> 00:00:45,000
+20
+00:00:31,500 --> 00:00:33,500
 to keep everything safe and aligned.
 
+21
+00:00:43,447 --> 00:00:44,787
+And if you scroll down,
+
 22
-00:00:45,680 --> 00:00:48,000
-And if you scroll down, you can see
+00:00:44,787 --> 00:00:46,247
+you can see what tools are accessible
 
 23
-00:00:48,000 --> 00:00:50,150
-what tools are accessible from what page,
+00:00:46,247 --> 00:00:48,647
+from what page, which ones are accessible
 
 24
-00:00:50,150 --> 00:00:52,650
-which ones are accessible from all pages,
+00:00:48,647 --> 00:00:49,747
+from all pages,
 
 25
-00:00:52,650 --> 00:00:55,470
+00:00:49,747 --> 00:00:51,147
 and a little bit more detail about
 
 26
-00:00:55,470 --> 00:00:57,170
+00:00:51,147 --> 00:00:52,647
 exactly what's going on here,
 
 27
-00:00:57,170 --> 00:00:59,250
+00:00:52,647 --> 00:00:54,647
 along with a red tag to see
 
 28
-00:00:59,250 --> 00:01:00,980
+00:00:54,647 --> 00:00:57,247
 what needs human input.
 
 29
-00:01:01,350 --> 00:01:03,300
+00:00:58,547 --> 00:00:59,947
 So, without further ado,
 
 30
-00:01:03,300 --> 00:01:05,420
+00:00:59,947 --> 00:01:01,447
 we're going to go ahead and demo
 
 31
-00:01:05,420 --> 00:01:07,700
-these WebMCP tool calls by using
+00:01:01,447 --> 00:01:03,247
+these WebMCP tool calls
 
 32
-00:01:07,700 --> 00:01:09,480
-the Taskboard app.
+00:01:03,247 --> 00:01:06,247
+by using the taskboard app.
 
 33
-00:01:10,930 --> 00:01:13,100
+00:01:07,947 --> 00:01:09,547
 So, I'm going to go ahead and ask
 
 34
-00:01:13,100 --> 00:01:14,920
+00:01:09,547 --> 00:01:11,047
 the agent to open that application up.
 
 35
-00:01:14,920 --> 00:01:17,270
-And to just give some brief explanation
-
-36
-00:01:17,270 --> 00:01:19,250
-on Taskboard app, it is an application
-
-37
-00:01:19,250 --> 00:01:21,650
-that helps organize tasks into a
-
-38
-00:01:21,650 --> 00:01:23,500
-Kanban-style board.
-
-39
-00:01:23,500 --> 00:01:25,830
-The idea here is that the agent
-
-40
-00:01:25,830 --> 00:01:28,080
-can work with humans to collaborate
-
-41
-00:01:28,080 --> 00:01:30,680
-on tasks, update tasks, delete tasks,
-
-42
-00:01:30,680 --> 00:01:32,230
-and so forth.
-
-43
-00:01:33,900 --> 00:01:36,080
+00:01:11,747 --> 00:01:13,547
 All right, so here is the first page.
 
-44
-00:01:36,080 --> 00:01:38,480
+36
+00:01:13,547 --> 00:01:15,547
 As you can see, you can give it a goal
 
-45
-00:01:38,480 --> 00:01:40,100
+37
+00:01:15,547 --> 00:01:16,547
 and a rough timeline.
 
-46
-00:01:40,100 --> 00:01:41,480
+38
+00:01:16,547 --> 00:01:17,747
 For the next phase,
 
-47
-00:01:41,480 --> 00:01:43,350
-I'm going to go ahead and ask
+39
+00:01:17,747 --> 00:01:19,747
+I'm going to go ahead and ask the agent
 
-48
-00:01:43,350 --> 00:01:45,570
-the agent to build this out for us.
+40
+00:01:19,747 --> 00:01:21,247
+to build this out for us.
 
-49
-00:01:45,880 --> 00:01:48,000
+41
+00:01:22,947 --> 00:01:24,647
 And as you can see on the top,
 
-50
-00:01:48,000 --> 00:01:49,820
-you can see that the agent
+42
+00:01:24,647 --> 00:01:26,247
+you can see that the agent is using
 
-51
-00:01:49,820 --> 00:01:51,470
-is using the Taskboard's
+43
+00:01:26,247 --> 00:01:28,247
+the taskboard set goal tool,
 
-52
-00:01:51,470 --> 00:01:53,100
-set_goal tool,
-
-53
-00:01:53,100 --> 00:01:55,100
+44
+00:01:28,247 --> 00:01:29,947
 and right beside it, you can see
 
-54
-00:01:55,100 --> 00:01:56,850
-the amount of tools that are
+45
+00:01:29,947 --> 00:01:31,447
+the amount of tools that are available
 
-55
-00:01:56,850 --> 00:01:58,230
-available to the agent.
+46
+00:01:31,447 --> 00:01:32,247
+to the agent.
 
-56
-00:01:58,230 --> 00:02:00,080
-So, here it looks like it is
+47
+00:01:32,247 --> 00:01:33,547
+So, here, it looks like
 
-57
-00:02:00,080 --> 00:02:02,180
-breaking the tasks down into
+48
+00:01:33,547 --> 00:01:34,947
+it is breaking the tasks
 
-58
-00:02:02,180 --> 00:02:03,970
-a Kanban-style board.
+49
+00:01:35,219 --> 00:01:37,379
+down into a Kanban-style board.
 
-59
-00:02:03,970 --> 00:02:05,750
-We'll give that a few minutes—
-
-60
-00:02:05,750 --> 00:02:08,020
-or a few seconds, I should say.
-
-61
-00:02:08,020 --> 00:02:10,400
+50
+00:01:37,459 --> 00:01:39,579
 All right, looks like the board went ahead
 
-62
-00:02:10,400 --> 00:02:11,780
+51
+00:01:39,579 --> 00:01:41,339
 and was generated.
 
-63
-00:02:12,000 --> 00:02:13,950
-Now, we can use the agent to read
+52
+00:01:41,539 --> 00:01:43,739
+Right. So now we can go ahead and
 
-64
-00:02:13,950 --> 00:02:15,150
-what's on the board.
+53
+00:01:43,739 --> 00:01:46,699
+try out some of the other WebMCP tools.
 
-65
-00:02:15,150 --> 00:02:17,350
-But before that, as you can see here,
+54
+00:01:46,979 --> 00:01:48,019
+For the next part,
 
-66
-00:02:17,350 --> 00:02:19,150
-we have a progress bar
+55
+00:01:48,019 --> 00:01:49,459
+I'm just going to ask it to
 
-67
-00:02:19,150 --> 00:02:21,250
-and a Kanban-style board down here
+56
+00:01:49,459 --> 00:01:52,059
+move something across the board.
 
-68
-00:02:21,250 --> 00:02:23,830
-with Not Started, In Progress, and Done.
+57
+00:01:52,539 --> 00:01:53,939
+Right, and so the
 
-69
-00:02:23,830 --> 00:02:25,720
-So, for the purpose of this demo,
+58
+00:01:53,939 --> 00:01:57,339
+write demo script / draft demo script
 
-70
-00:02:25,720 --> 00:02:27,650
-we're just going to go ahead and ask
+59
+00:01:57,339 --> 00:01:59,379
+is going to be moved over to Done,
 
-71
-00:02:27,650 --> 00:02:29,330
-the agent to read the stages
+60
+00:01:59,379 --> 00:02:00,779
+since that's completed.
 
-72
-00:02:29,330 --> 00:02:31,150
-of the tasks, which is one
-
-73
-00:02:31,150 --> 00:02:33,280
-of the WebMCP tools we implemented.
-
-74
-00:02:33,280 --> 00:02:35,450
-And again, at the top, you can see
-
-75
-00:02:35,450 --> 00:02:37,080
-what tool it's accessing,
-
-76
-00:02:37,080 --> 00:02:38,820
-and then a current progress
-
-77
-00:02:38,820 --> 00:02:40,200
-over here on the left.
-
-78
-00:02:40,980 --> 00:02:42,770
-Right. So, now we can go ahead
-
-79
-00:02:42,770 --> 00:02:44,720
-and try out some of the other
-
-80
-00:02:44,720 --> 00:02:46,020
-WebMCP tools.
-
-81
-00:02:46,020 --> 00:02:48,080
-For the next part, we're just going to
-
-82
-00:02:48,080 --> 00:02:49,830
-ask it to move something
-
-83
-00:02:49,830 --> 00:02:51,000
-across the board.
-
-84
-00:02:51,320 --> 00:02:53,500
-Right. And so, the write demo script /
-
-85
-00:02:53,500 --> 00:02:56,020
-draft demo script is going to be moved
-
-86
-00:02:56,020 --> 00:02:58,180
-over to Done since that's completed.
-
-87
-00:02:58,180 --> 00:03:00,370
+61
+00:02:01,019 --> 00:02:03,299
 And as you can see in the interface,
 
-88
-00:03:00,370 --> 00:03:02,500
-it has been moved and the progress bar
+62
+00:02:03,299 --> 00:02:04,499
+it has been moved,
 
-89
-00:03:02,500 --> 00:03:03,820
-has been updated.
+63
+00:02:04,499 --> 00:02:05,619
+and the progress bar has been updated.
 
-90
-00:03:04,280 --> 00:03:05,830
+64
+00:02:06,059 --> 00:02:08,219
 Now, for the next task,
 
-91
-00:03:05,830 --> 00:03:08,070
+65
+00:02:08,219 --> 00:02:09,719
 I'm going to go ahead and do something
 
-92
-00:03:08,070 --> 00:03:10,430
-a little bit more riskier, which is to
+66
+00:02:09,719 --> 00:02:10,619
+a little bit riskier,
 
-93
-00:03:10,430 --> 00:03:12,350
-delete a task in order to see
+67
+00:02:10,819 --> 00:02:13,419
+which is to delete a task,
 
-94
-00:03:12,350 --> 00:03:15,000
-how the confirmation gate is implemented.
+68
+00:02:14,179 --> 00:02:15,419
+in order to see how
 
-95
-00:03:18,050 --> 00:03:20,220
-So, here we're just going to try to remove
+69
+00:02:15,419 --> 00:02:17,299
+the confirmation gate is implemented.
 
-96
-00:03:20,220 --> 00:03:22,430
-the record footage and voiceover.
+70
+00:02:18,718 --> 00:02:20,278
+So here we're just going to try to remove
 
-97
-00:03:22,430 --> 00:03:24,050
+71
+00:02:20,278 --> 00:02:22,348
+the record footage and voiceover,
+
+72
+00:02:22,598 --> 00:02:23,598
 And as you can see,
 
-98
-00:03:24,050 --> 00:03:26,180
+73
+00:02:23,598 --> 00:02:24,898
 this confirmation gate appears
 
-99
-00:03:26,180 --> 00:03:27,600
+74
+00:02:24,898 --> 00:02:26,798
 at the bottom, asking for human input.
 
-100
-00:03:27,600 --> 00:03:29,670
+75
+00:02:26,878 --> 00:02:28,598
 I'm going to go ahead and confirm it,
 
-101
-00:03:29,670 --> 00:03:31,350
-and we did see the deletion
+76
+00:02:28,898 --> 00:02:30,698
+and we did see the deletion of that task,
 
-102
-00:03:31,350 --> 00:03:32,630
-of that task.
+77
+00:02:30,998 --> 00:02:34,298
+so, we do see this as an option
 
-103
-00:03:32,630 --> 00:03:34,650
-So, from here, I'm going to go ahead
+78
+00:02:34,298 --> 00:02:36,718
+for humans and agents to collaborate
 
-104
-00:03:34,650 --> 00:03:35,750
-and move on.
-
-105
-00:03:35,750 --> 00:03:37,750
-And in lieu of the time remaining,
-
-106
-00:03:37,750 --> 00:03:39,780
-I'm just going to go ahead and wrap
-
-107
-00:03:39,780 --> 00:03:41,280
-the demo up by saying that
-
-108
-00:03:41,280 --> 00:03:42,820
-this was just an example
-
-109
-00:03:42,820 --> 00:03:44,780
-of one of the many applications
-
-110
-00:03:44,780 --> 00:03:46,470
-on the Team Rocket control hub
-
-111
-00:03:46,470 --> 00:03:48,180
-that can use WebMCP.
-
-112
-00:03:48,180 --> 00:03:50,150
-We do see this as an option for
-
-113
-00:03:50,150 --> 00:03:52,230
-humans and agents to collaborate
-
-114
-00:03:52,230 --> 00:03:54,330
+79
+00:02:36,718 --> 00:02:38,638
 across useful product features,
 
-115
-00:03:54,330 --> 00:03:56,230
+80
+00:02:38,758 --> 00:02:40,998
 such as the taskboard tasks
 
-116
-00:03:56,230 --> 00:03:57,950
+81
+00:02:40,998 --> 00:02:42,278
 that we just witnessed.
 
-117
-00:03:57,950 --> 00:03:59,500
+82
+00:02:42,478 --> 00:02:43,678
 Thank you all for your time,
 
-118
-00:03:59,500 --> 00:04:01,670
+83
+00:02:44,198 --> 00:02:45,558
 and we'll see you at the next one.
 
