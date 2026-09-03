@@ -76,7 +76,9 @@ export default function Walkthroughs({ builds: all }) {
 
   if (!builds.length) return null;
   const current = builds.find((b) => b.slug === active) || builds[0];
-  const src = clip === "agent" && current.agentVideo ? current.agentVideo : current.video;
+  const agentClip = clip === "agent" && current.agentVideo;
+  const src = agentClip ? current.agentVideo : current.video;
+  const poster = agentClip ? current.agentPoster || current.poster : current.poster;
   const tools = toolCount(current.slug);
 
   return (
@@ -161,7 +163,9 @@ export default function Walkthroughs({ builds: all }) {
             </span>
             <span className={s.actionText}>
               <span className={s.actionTitle}>Watch an agent drive it</span>
-              <span className={s.actionSub}>Through WebMCP, hands off</span>
+              <span className={s.actionSub}>
+                {current.agentRecorded ? `Through WebMCP, recorded ${current.agentRecorded}` : "Through WebMCP, hands off"}
+              </span>
             </span>
           </button>
         ) : (
@@ -191,9 +195,9 @@ export default function Walkthroughs({ builds: all }) {
              few KB and gives the element something to start from. */
           preload="metadata"
           playsInline
-          poster={current.poster}
+          poster={poster}
           onPlay={() => setStarted(true)}
-          aria-label={`${current.name} walkthrough`}
+          aria-label={agentClip ? `An agent driving ${current.name}` : `${current.name} walkthrough`}
         >
           <source src={src} type="video/mp4" />
           Your browser can&apos;t play this video.{" "}
@@ -205,7 +209,7 @@ export default function Walkthroughs({ builds: all }) {
             type="button"
             className={s.overlay}
             onClick={() => play()}
-            aria-label={`Play the ${current.name} walkthrough`}
+            aria-label={agentClip ? `Play the agent driving ${current.name}` : `Play the ${current.name} walkthrough`}
           >
             <span className={s.play} aria-hidden="true">
               <Icon name="play" size={26} />
