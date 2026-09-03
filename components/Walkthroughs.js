@@ -23,14 +23,13 @@ const toolCount = (slug) => CATALOG.find((g) => g.build === slug)?.tools.length 
  */
 const WEBMCP_CHALLENGE = "https://openai.com/webmcp-challenge/";
 
-export default function Walkthroughs({ builds: all, demo = null }) {
-  // Builds you can watch first, in their own order, then the rest, then the
-  // challenge demo as its own tab when there is one.
-  const builds = [
-    ...all.filter((b) => b.video),
-    ...all.filter((b) => !b.video),
-    ...(demo ? [{ ...demo, isDemo: true }] : []),
-  ];
+export default function Walkthroughs({ builds: all, demo = null, showClips = true }) {
+  // With clips on: watchable builds first, the rest, then the challenge demo.
+  // With clips off the demo is the only video, so it leads and is selected.
+  const demoTab = demo ? [{ ...demo, isDemo: true }] : [];
+  const builds = showClips
+    ? [...all.filter((b) => b.video), ...all.filter((b) => !b.video), ...demoTab]
+    : [...demoTab, ...all];
   const [active, setActive] = useState(builds[0]?.slug);
   // The overlay only covers the un-started state; once playing, the native
   // controls take over. Switching tabs remounts the video, so this resets too.
@@ -84,8 +83,10 @@ export default function Walkthroughs({ builds: all, demo = null }) {
 
   if (!builds.length) return null;
   const current = builds.find((b) => b.slug === active) || builds[0];
-  const agentClip = clip === "agent" && current.agentVideo;
-  const src = agentClip ? current.agentVideo : current.video;
+  const video = showClips ? current.video : null;
+  const agentVideo = showClips ? current.agentVideo : null;
+  const agentClip = clip === "agent" && agentVideo;
+  const src = agentClip ? agentVideo : video;
   const poster = agentClip ? current.agentPoster || current.poster : current.poster;
   const tools = toolCount(current.slug);
 
@@ -156,7 +157,7 @@ export default function Walkthroughs({ builds: all, demo = null }) {
           </span>
         </Link>
 
-        {current.video ? (
+        {video ? (
           <button type="button" className={s.action} onClick={() => watch("human")}>
             <span className={s.actionIcon} aria-hidden="true">
               <Icon name="play" size={18} />
@@ -174,15 +175,19 @@ export default function Walkthroughs({ builds: all, demo = null }) {
               <Icon name="clock" size={18} />
             </span>
             <span className={s.actionText}>
-              <span className={s.actionTitle}>No walkthrough yet</span>
+              <span className={s.actionTitle}>
+                {current.video ? "Walkthrough being re-recorded" : "No walkthrough yet"}
+              </span>
               <span className={s.actionSub}>
-                The build runs and its agent tools are live.{current.wip ? ` ${current.wip}` : ""}
+                {current.video
+                  ? "The build has moved on since the buildathon clip. A fresh one is coming."
+                  : `The build runs and its agent tools are live.${current.wip ? ` ${current.wip}` : ""}`}
               </span>
             </span>
           </div>
         )}
 
-        {current.agentVideo ? (
+        {agentVideo ? (
           <button
             type="button"
             className={s.action}
@@ -216,7 +221,7 @@ export default function Walkthroughs({ builds: all, demo = null }) {
 
       {current.isDemo && <YouTubeEmbed id={current.youtubeId} title={current.title} />}
 
-      {current.video && (
+      {video && (
       <div className={s.stage}>
         <video
           key={`${current.slug}-${clip}`}
@@ -266,7 +271,7 @@ export default function Walkthroughs({ builds: all, demo = null }) {
       <div className={s.foot}>
         <div className={s.blurb}>
           <p className="t-sm t-secondary">{current.solution}</p>
-          {current.recorded && (
+          {current.recorded && (showClips || current.isDemo) && (
             /* The clips are a dated record of the buildathon, not documentation
                that tracks the live build. Saying so is what lets the apps keep
                changing without the videos silently going stale. */

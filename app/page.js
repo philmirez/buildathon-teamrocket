@@ -2,7 +2,7 @@ import Link from "next/link";
 import RocketArt from "@/components/RocketArt";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
-import { BUILDS, WEBMCP_DEMO } from "@/lib/builds";
+import { BUILDS, WALKTHROUGHS_LIVE, WEBMCP_DEMO } from "@/lib/builds";
 import { TEAM, initials } from "@/lib/team";
 import Walkthroughs from "@/components/Walkthroughs";
 import styles from "./page.module.css";
@@ -141,7 +141,11 @@ export default function Home() {
           </ul>
         </div>
 
-        <Walkthroughs builds={BUILDS} demo={WEBMCP_DEMO.youtubeId ? WEBMCP_DEMO : null} />
+        <Walkthroughs
+          builds={BUILDS}
+          demo={WEBMCP_DEMO.youtubeId ? WEBMCP_DEMO : null}
+          showClips={WALKTHROUGHS_LIVE}
+        />
       </section>
 
       <footer className={styles.footer}>
